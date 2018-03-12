@@ -28,103 +28,103 @@ class Game {
     Reset();
   }
   
-  void Reset () {
-    _state = state_init;
-     
-    _maze = new Maze (20, 40, int (random(1, 6)));
-    _maze.compute ();
-    _maze.show (8);
+    void Reset () {
+      _state = state_init;
+       
+      _maze = new Maze (40, 64, int (random(1, 6)));
+      _maze.compute ();
+      _maze.show (10);
+      
+      _needToRedraw = true;
     
-    _needToRedraw = true;
+      _startTime = 0;
+      _endTime = 0;
   
-    _startTime = 0;
-    _endTime = 0;
-
-    ClearTextArea();
-  
-    textAlign(CENTER);
-    fill(black);
-    text("Press SPACE to start",160, 220);
-  }
-  
-  void Start() {
-   if (_state == state_init) {
-     Run();    
-     return;
-   }
-  }
-  void Move () {
-    if (_state == state_run) {
-      if (keyCode == LEFT) _maze.goLeft();
-      else if (keyCode == RIGHT) _maze.goRight();
-      else if (keyCode == DOWN) _maze.goDown();
-      else if (keyCode == UP) _maze.goUp();
+      ClearTextArea();
+    
+      textAlign(CENTER);
+      fill(black);
+      text("Press SPACE to start", 320, 440);
     }
-  }
- 
-  void Run() {
-    _state = state_run;
-    _startTime = millis();
     
-    // Clear and draw score
-    ClearTextArea();
-  }
-  
-  void End() {
-    _state = state_end;
-    _endTime = millis();
-    
-    ClearTextArea();
-    
-    textAlign(CENTER);
-    fill(black);
-    text("FINISHED in",160, 180);
-    int delta = (_endTime - _startTime) / 1000;
-    int m = delta / 60;
-    int s = (delta - m*60);
-    String ti = "Time : " + m + "'" + s + "\"";
-    text(ti ,160, 200);
-    String p = "Current : " + _maze.getStep() + " steps";
-    text(p ,160, 220);
-    String d = "Best : " + _maze.getMaxDistance () + " steps";
-    text(d ,160, 240);
-  }
-  
-  void ClearTextArea () {
-    fill (white);
-    rect(0, 160, 320, 60);
-  }
-  
-  void KeyPressed (int k) {
-    if (k == 'r') Reset(); // Resetting game
-    if (k == ' ') Start(); // Start
-    
-    Move ();  
-  }
-  
-  void Manage() {
-    if (_state == state_run) {
-      if (_maze.AtEnd()) End();
-      else { // Updating current time
-        fill (white);
-        rect(0, 180, 320, 20);
-        fill (black);
-        int delta = (millis() - _startTime) / 1000;
-        int m = delta / 60;
-        int s = (delta - m*60);
-        String ti = "Time : " + m + "'" + s + "\"";
-        text(ti ,160, 200);        
+    void Start() {
+     if (_state == state_init) {
+       Run();    
+       return;
+     }
+    }
+    void Move () {
+      if (_state == state_run) {
+        if (keyCode == LEFT) _maze.goLeft();
+        else if (keyCode == RIGHT) _maze.goRight();
+        else if (keyCode == DOWN) _maze.goDown();
+        else if (keyCode == UP) _maze.goUp();
       }
     }
-  }
+   
+    void Run() {
+      _state = state_run;
+      _startTime = millis();
+      
+      // Clear and draw score
+      ClearTextArea();
+    }
+    
+    void End() {
+      _state = state_end;
+      _endTime = millis();
+      
+      ClearTextArea();
+      
+      textAlign(CENTER);
+      fill(black);
+      text("FINISHED in",320, 420);
+      int delta = (_endTime - _startTime) / 1000;
+      int m = delta / 60;
+      int s = (delta - m*60);
+      String ti = "Time : " + m + "'" + s + "\"";
+      text(ti ,320, 440);
+      String p = "Current : " + _maze.getStep() + " steps";
+      text(p ,320, 460);
+      String d = "Best : " + _maze.getMaxDistance () + " steps";
+      text(d ,320, 580);
+    }
+    
+    void ClearTextArea () {
+      fill (white);
+      rect(0, 420, 640, 60);
+    }
+    
+    void KeyPressed (int k) {
+      if (k == 'r') Reset(); // Resetting game
+      if (k == ' ') Start(); // Start
+      
+      Move ();  
+    }
+    
+    void Manage() {
+      if (_state == state_run) {
+        if (_maze.AtEnd()) End();
+        else { // Updating current time
+          fill (white);
+          rect(0, 420, 640, 60);
+          fill (black);
+          int delta = (millis() - _startTime) / 1000;
+          int m = delta / 60;
+          int s = (delta - m*60);
+          String ti = "Time : " + m + "'" + s + "\"";
+          text(ti ,320, 460);        
+        }
+      }
+   }
   
-  int _state;
-  boolean _needToRedraw;
-  
-  int _startTime;
-  int _endTime;
-  
-  Maze _maze;
+    int _state;
+    boolean _needToRedraw;
+    
+    int _startTime;
+    int _endTime;
+    
+    Maze _maze;
 };
 
 int VIDE=0;
@@ -162,7 +162,7 @@ class Maze {
     _p = p;
     
     if (_w < 5) _w = 5;
-    if (_h < 5) _h = 5;
+    if (_h < 5) _h = 5; 
 
     _m = new int [_h][_w];
     _nodes = new ArrayList();
@@ -173,7 +173,9 @@ class Maze {
   
 void show (int dimension) {
  
-  if (dimension > 1 && dimension < 10) _d = dimension;
+  //if (dimension > 1 && dimension < 10) 
+  _d = dimension;
+ 
   
   // Maze
   for (int j = 0; j < _h; ++j) {
@@ -331,7 +333,7 @@ void show (int dimension) {
   void goLeft () {
      if (_m[_my][_mx-1]==PAS) {
         _step++;
-       fill(white);
+       fill(0xF0, 0xF0, 0xf0);
        rect(_mx*_d, _my*_d, _d, _d);
        _mx--;
        fill(blue);
@@ -342,7 +344,7 @@ void show (int dimension) {
        void goRight () {
          if (_m[_my][_mx+1]==PAS) {
             _step++;
-           fill(white);
+           fill(0xF0, 0xF0, 0xF0);
            rect(_mx*_d, _my*_d, _d, _d);
            _mx++;
            fill(blue);
@@ -353,7 +355,7 @@ void show (int dimension) {
   void goUp () {
      if (_m[_my-1][_mx]==PAS) {
         _step++;
-       fill(white);
+       fill(0xF0, 0xF0, 0xF0);
        rect(_mx*_d, _my*_d, _d, _d);
        _my--;
        fill(blue);
@@ -364,7 +366,7 @@ void show (int dimension) {
        void goDown () {
          if (_m[_my+1][_mx]==PAS) {
             _step++;
-           fill(white);
+           fill(0xF0, 0xF0, 0xF0);
            rect(_mx*_d, _my*_d, _d, _d);
            _my++;
            fill(blue);
@@ -424,7 +426,7 @@ int [][] dirset = {
 Game game;
 PFont font;
 void setup () {
-  size (320,240);
+  size (640,480);
  
   colorMode(RGB, height, height, height);
   background(white);
