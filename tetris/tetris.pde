@@ -19,11 +19,33 @@ int textColor = color(34, 230, 190);
 Boolean gameOver = false;
 Boolean gameOn = false;
 
+// sound
+import ddf.minim.*;
+
+Minim minim;
+AudioPlayer player;
+String music_name = "theme_music.mp3";
+
+// dzdrav: shape texture files
+String[] figureNames = {"figure-one.png"
+        ,"figure-two.png"
+        ,"figure-three.png"
+        ,"figure-four.png"
+        ,"figure-five.png"
+        ,"figure-six.png"
+        ,"figure-seven.png"};
+PImage[] figures = new PImage[figureNames.length];
+
 void setup() {
   size(600, 480, P2D);
   textSize(20);
-  // Dinko
-  PImage texture = loadImage("bitmap.png");
+  // dzdrav loading textures for the shapes
+  for (int i = 0; i < figureNames.length; ++i){
+    figures[i] = loadImage(figureNames[i]);
+  }
+  // dzdrav: loading music
+  minim = new Minim(this);
+  player = minim.loadFile(music_name);
 }
 
 void initialize() {
@@ -52,6 +74,9 @@ void draw() {
     }
     piece.display(false);
     score.display();
+    if (!player.isPlaying()){
+      player.loop();
+    }
   }
   if (gameOver) {
     noStroke();
@@ -59,6 +84,7 @@ void draw() {
     rect(160, 260, 240, 2*txtSize, 3);
     fill(textColor);
     text("Game Over", 225, 290);
+    player.pause();
   }
   if (!gameOn) {
     noStroke();
@@ -265,8 +291,8 @@ class Piece {
 
   void display(Boolean still) {
     stroke(250);
-    //fill(c);
-    texture(texture);
+    fill(c);
+    //texture(texture);
     pushMatrix();
     if (!still) {
       translate(160, 40);
@@ -274,7 +300,9 @@ class Piece {
     }
     int rot = still ? 0 : r;
     for (int i = 0; i < 4; i++) {
-      rect(pos[rot][i][0] * q, pos[rot][i][1] * q, 20, 20);
+      //rect(pos[rot][i][0] * q, pos[rot][i][1] * q, 20, 20);
+      //image(texture, pos[rot][i][0] * q, pos[rot][i][1] * q, 20, 20);
+      image(figures[kind], pos[rot][i][0] * q, pos[rot][i][1] * q, 20, 20);
     }
     popMatrix();
   }
