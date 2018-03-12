@@ -10,7 +10,8 @@ Pieces pieces;
 Score score;
 int r = 0;//rotation status, from 0 to 3
 int level = 1;
-int nbLines = 0; 
+int nbLines = 0;
+
 
 int txtSize = 20;
 int textColor = color(34, 230, 190);
@@ -21,6 +22,8 @@ Boolean gameOn = false;
 void setup() {
   size(600, 480, P2D);
   textSize(20);
+  // Dinko
+  PImage texture = loadImage("bitmap.png");
 }
 
 void initialize() {
@@ -40,7 +43,7 @@ void draw() {
 
   if(grid != null) {
     grid.drawGrid();
-    int timer = millis();  
+    int timer = millis();
     if (gameOn) {
       if (timer - currentTime > dt) {
         currentTime = timer;
@@ -240,7 +243,7 @@ class Piece {
     color(128, 12, 128), //purple
     color(230, 12, 12), //red
     color(12, 230, 12), //green
-    color(9, 239, 230), //cyan 
+    color(9, 239, 230), //cyan
     color(230, 230, 9), //yellow
     color(230, 128, 9), //orange
     color(12, 12, 230) //blue
@@ -262,7 +265,8 @@ class Piece {
 
   void display(Boolean still) {
     stroke(250);
-    fill(c);
+    //fill(c);
+    texture(texture);
     pushMatrix();
     if (!still) {
       translate(160, 40);
@@ -304,7 +308,7 @@ class Piece {
       if(grid.pieceFits()){
         //soundLeftRight();
       }else {
-         x++; 
+         x++;
       }
       break;
     case RIGHT:
@@ -312,7 +316,7 @@ class Piece {
       if(grid.pieceFits()){
         //soundLeftRight();
       }else{
-         x--; 
+         x--;
       }
       break;
     case DOWN:
@@ -321,7 +325,7 @@ class Piece {
     case UP:
       r = (r+1)%4;
       if(!grid.pieceFits()){
-         r = r-1 < 0 ? 3 : r-1; 
+         r = r-1 < 0 ? 3 : r-1;
          //soundRotationFail();
       }else{
         //soundRotation();
@@ -348,7 +352,7 @@ class Pieces {
     pos[0][0][2][1] = 0;
     pos[0][0][3][0] = 0;
     pos[0][0][3][1] = 1;
-    
+
     pos[0][1][0][0] = 0;
     pos[0][1][0][1] = 0;
     pos[0][1][1][0] = 1;
@@ -395,7 +399,7 @@ class Pieces {
     pos[1][1][2][1] = pos[1][3][2][1] = -1;
     pos[1][1][3][0] = pos[1][3][3][0] = 0;
     pos[1][1][3][1] = pos[1][3][3][1] = 1;
-    
+
     ////   @ @ ////
     //// @ @   ////
     pos[2][0][0][0] = pos[2][2][0][0] = 0;//piece 2, rotation 0 and 2, point nb 0, x
@@ -415,7 +419,7 @@ class Pieces {
     pos[2][1][2][1] = pos[2][3][2][1] = -1;
     pos[2][1][3][0] = pos[2][3][3][0] = 0;
     pos[2][1][3][1] = pos[2][3][3][1] = 1;
-    
+
     ////// @ //////
     ////// @ //////
     ////// @ //////
@@ -437,7 +441,7 @@ class Pieces {
     pos[3][1][2][1] = pos[3][3][2][1] = 0;
     pos[3][1][3][0] = pos[3][3][3][0] = 2;
     pos[3][1][3][1] = pos[3][3][3][1] = 0;
-    
+
     //// @ @ ////
     //// @ @ ////
     //piece 4, all rotations are the same
@@ -488,7 +492,7 @@ class Pieces {
     pos[5][3][2][1] = 0;
     pos[5][3][3][0] = 0;
     pos[5][3][3][1] = 1;
-    
+
     ////   @ ////
     ////   @ ////
     //// @ @ ////
@@ -564,7 +568,7 @@ class Score {
     text("level: ", 0, 3*txtSize);
     fill(230, 230, 12);
     text("" + level, 0, 4*txtSize);
-    
+
     //lines
     fill(textColor);
     text("lines: ", 0, 6*txtSize);
@@ -619,10 +623,10 @@ class Score {
         txt += "0" + p;
       else
         txt += p;
-    } 
+    }
     else
       txt += p;
-      
+
     return txt;
   }
 }
