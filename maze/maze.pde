@@ -22,6 +22,17 @@ int state_init = 0;
 int state_run = 1;
 int state_end = 2;
 
+int velicina_kvadrata = 14;
+int broj_kvadrata_x = 45;
+int broj_kvadrata_y = 30;
+int dim_tekst_okvira = 80;
+int tekst_pomak = dim_tekst_okvira / 4;
+int sirina = 630;
+int pocetak_teksta_y = (broj_kvadrata_y + 1) * velicina_kvadrata;
+// u setup() ide size(broj_kvadrata_x * velicina_kvadrata ,broj_kvadrata_y * velicina_kvadrata + dim_tekst_okvira)
+//ali processing ne dozvoljava da budu varijable u size, pa moramo brojeve uvrstit
+
+
 //=============== GAME ================
 class Game {
   Game () {
@@ -31,9 +42,12 @@ class Game {
     void Reset () {
       _state = state_init;
        
-      _maze = new Maze (40, 64, int (random(1, 6)));
+       int p = int (random(1,6));
+       //veći p = lakši labirint (u smislu glađih zidova)
+       
+      _maze = new Maze(broj_kvadrata_y, broj_kvadrata_x , p);
       _maze.compute ();
-      _maze.show (10);
+      _maze.show (velicina_kvadrata);
       
       _needToRedraw = true;
     
@@ -44,7 +58,7 @@ class Game {
     
       textAlign(CENTER);
       fill(black);
-      text("Press SPACE to start", 320, 440);
+      text("Press SPACE to start", sirina / 2, pocetak_teksta_y);
     }
     
     void Start() {
@@ -78,21 +92,21 @@ class Game {
       
       textAlign(CENTER);
       fill(black);
-      text("FINISHED in",320, 420);
+      text("FINISHED in",sirina / 2, pocetak_teksta_y);
       int delta = (_endTime - _startTime) / 1000;
       int m = delta / 60;
       int s = (delta - m*60);
       String ti = "Time : " + m + "'" + s + "\"";
-      text(ti ,320, 440);
+      text(ti ,sirina / 2, pocetak_teksta_y + tekst_pomak);
       String p = "Current : " + _maze.getStep() + " steps";
-      text(p ,320, 460);
+      text(p , sirina / 2, pocetak_teksta_y + 2*tekst_pomak);
       String d = "Best : " + _maze.getMaxDistance () + " steps";
-      text(d ,320, 580);
+      text(d , sirina / 2, pocetak_teksta_y + 3*tekst_pomak);
     }
     
     void ClearTextArea () {
       fill (white);
-      rect(0, 420, 640, 60);
+      rect(0, velicina_kvadrata * broj_kvadrata_y ,broj_kvadrata_x * velicina_kvadrata , dim_tekst_okvira);
     }
     
     void KeyPressed (int k) {
@@ -107,13 +121,13 @@ class Game {
         if (_maze.AtEnd()) End();
         else { // Updating current time
           fill (white);
-          rect(0, 420, 640, 60);
+          rect(0, velicina_kvadrata * broj_kvadrata_y ,broj_kvadrata_x * velicina_kvadrata , dim_tekst_okvira);
           fill (black);
           int delta = (millis() - _startTime) / 1000;
           int m = delta / 60;
           int s = (delta - m*60);
           String ti = "Time : " + m + "'" + s + "\"";
-          text(ti ,320, 460);        
+          text(ti ,sirina / 2, pocetak_teksta_y + tekst_pomak);        
         }
       }
    }
@@ -160,9 +174,6 @@ class Maze {
     _sy = 1;
     _dirs = 0;
     _p = p;
-    
-    if (_w < 5) _w = 5;
-    if (_h < 5) _h = 5; 
 
     _m = new int [_h][_w];
     _nodes = new ArrayList();
@@ -171,12 +182,10 @@ class Maze {
   }
 
   
-void show (int dimension) {
+void show (int velicina_kvadrata) {
  
-  //if (dimension > 1 && dimension < 10) 
-  _d = dimension;
+  _d = velicina_kvadrata;
  
-  
   // Maze
   for (int j = 0; j < _h; ++j) {
     for (int k = 0; k < _w; ++k) {
@@ -333,7 +342,7 @@ void show (int dimension) {
   void goLeft () {
      if (_m[_my][_mx-1]==PAS) {
         _step++;
-       fill(0xF0, 0xF0, 0xf0);
+       fill(0xFF, 0xFF, 0xFF);
        rect(_mx*_d, _my*_d, _d, _d);
        _mx--;
        fill(blue);
@@ -344,7 +353,7 @@ void show (int dimension) {
        void goRight () {
          if (_m[_my][_mx+1]==PAS) {
             _step++;
-           fill(0xF0, 0xF0, 0xF0);
+           fill(0xFF, 0xFF, 0xFF);
            rect(_mx*_d, _my*_d, _d, _d);
            _mx++;
            fill(blue);
@@ -355,7 +364,7 @@ void show (int dimension) {
   void goUp () {
      if (_m[_my-1][_mx]==PAS) {
         _step++;
-       fill(0xF0, 0xF0, 0xF0);
+       fill(0xFF, 0xFF, 0xFF);
        rect(_mx*_d, _my*_d, _d, _d);
        _my--;
        fill(blue);
@@ -366,7 +375,7 @@ void show (int dimension) {
        void goDown () {
          if (_m[_my+1][_mx]==PAS) {
             _step++;
-           fill(0xF0, 0xF0, 0xF0);
+           fill(0xFF, 0xFF, 0xFF);
            rect(_mx*_d, _my*_d, _d, _d);
            _my++;
            fill(blue);
@@ -426,7 +435,7 @@ int [][] dirset = {
 Game game;
 PFont font;
 void setup () {
-  size (640,480);
+  size (630,500);
  
   colorMode(RGB, height, height, height);
   background(white);
