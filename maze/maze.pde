@@ -442,7 +442,7 @@ void setup () {
   noFill();
   noStroke ();
   
-  font = createFont("Arial",16,true);  // Loading font
+  font = createFont("Arial",20,true);  // Loading font
   textFont(font);
   
   game = new Game ();

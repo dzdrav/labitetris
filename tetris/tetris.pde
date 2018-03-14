@@ -37,7 +37,7 @@ String[] figureNames = {"figure-one.png"
 PImage[] figures = new PImage[figureNames.length];
 
 void setup() {
-  size(1250, 1250, P2D);
+  size(1250, 1205, P2D);
   textSize(30);
   // dzdrav loading textures for the shapes
   for (int i = 0; i < figureNames.length; ++i){
