@@ -1,6 +1,6 @@
-int w = 20;
-int h = 30;
-int q = 30;
+int w = 16;
+int h = 25;
+int sizeOfCube = 45;
 int dt; // delay between each move
 int currentTime;
 Grid grid;
@@ -8,9 +8,9 @@ Piece piece;
 Piece nextPiece;
 Pieces pieces;
 Score score;
-int r = 0;//rotation status, from 0 to 3
+int rotation = 0;//rotation status, from 0 to 3
 int level = 1;
-int nbLines = 0;
+int numberOfFullLines = 0;
 
 
 int txtSize = 30;
@@ -50,7 +50,7 @@ void setup() {
 
 void initialize() {
   level = 1;
-  nbLines = 0;
+  numberOfFullLines = 0;
   dt = 1000;
   currentTime = millis();
   score = new Score();
@@ -82,7 +82,7 @@ void draw() {
   if (gameOver) {
     noStroke();
     fill(255, 60);
-    rect(160, 260, 240, 2*txtSize, 3);
+    rect(200, 260, 240, 2*txtSize, 3);
     fill(textColor);
     text("Game Over", 225, 290);
     player.pause();
@@ -90,21 +90,23 @@ void draw() {
   if (!gameOn) {
     noStroke();
     fill(255, 60);
-    rect(160, 190, 500, 2*txtSize, 3);
+    rect(200, 190, 500, 2*txtSize, 3);
     fill(textColor);
-    text("press 's' to start playing!", 170, 220);
+    text("press 's' to start playing!", 210, 220);
   }
 }
 
 void goToNextPiece() {
+  //nextPiece je globalna varijabla, u init je postavljena na random piece
   piece = new Piece(nextPiece.kind);
   nextPiece = new Piece(-1);
-  r = 0;
+  rotation = 0;
 }
 
 void goToNextLevel() {
   score.addLevelPoints();
-  level = 1 + int(nbLines / 10);
+  level = 1 + int(numberOfFullLines / 10);
+  //sa svakim levelom idu kockice još malo brže :)
   dt *= .8;
 }
 
@@ -169,8 +171,8 @@ class Grid {
     int[][][] pos = piece.pos;
     Boolean pieceOneStepDownOk = true;
     for (int i = 0; i < 4; i ++) {
-      int tmpx = pos[r][i][0]+x;
-      int tmpy = pos[r][i][1]+y;
+      int tmpx = pos[rotation][i][0]+x;
+      int tmpy = pos[rotation][i][1]+y;
       if (tmpy >= h || !isFree(tmpx, tmpy)) {
         pieceOneStepDownOk = false;
         break;
@@ -185,8 +187,8 @@ class Grid {
     //println("addPieceToGrid x: "+x+" y: "+y);
     int[][][] pos = piece.pos;
     for (int i = 0; i < 4; i ++) {
-      if(pos[r][i][1]+y >= 0){
-        cells[pos[r][i][0]+x][pos[r][i][1]+y] = piece.c;
+      if(pos[rotation][i][1]+y >= 0){
+        cells[pos[rotation][i][0]+x][pos[rotation][i][1]+y] = piece.c;
       }else{
         gameOn = false;
         gameOver = true;
@@ -200,6 +202,7 @@ class Grid {
     drawGrid();
   }
 
+//check for full lines and delete them
   void checkFullLines() {
     int nb = 0; //number of full lines
     for (int j = 0; j < h; j ++) {
@@ -222,20 +225,20 @@ class Grid {
         }
       }
     }
-    deleteLines(nb);
+    checkLevelAddPoints(nb);
   }
 
-  void deleteLines(int nb) {
+  void checkLevelAddPoints(int nb) {
     //println("deleted lines: "+nb);
-    nbLines += nb;
-    if (int(nbLines / 10) > level-1) {
+    numberOfFullLines += nb;
+    if (int(numberOfFullLines / 10) > level-1) {
       goToNextLevel();
     }
     score.addLinePoints(nb);
   }
 
   void setToBottom() {
-    int originalY = piece.y;
+    //int originalY = piece.y;
     int j = 0;
     for (j = 0; j < h; j ++) {
       if (!pieceFits())
@@ -250,18 +253,18 @@ class Grid {
   void drawGrid() {
     stroke(120);
     pushMatrix();
-    translate(160, 40);
+    translate(200, 40);
     for (int i = 0; i <= w; i ++)
-      line(i*q, 0, i*q, h*q);
+      line(i*sizeOfCube, 0, i*sizeOfCube, h*sizeOfCube);
     for (int j = 0; j <= h; j ++)
-      line(0, j*q, w*q, j*q);
+      line(0, j*sizeOfCube, w*sizeOfCube, j*sizeOfCube);
 
     stroke(80);
     for (int i = 0; i < w; i ++) {
       for (int j = 0; j < h; j ++) {
         if (cells[i][j] != 0) {
           fill(cells[i][j]);
-          rect(i*q, j*q, q, q);
+          rect(i*sizeOfCube, j*sizeOfCube, sizeOfCube, sizeOfCube);
         }
       }
     }
@@ -290,7 +293,7 @@ class Piece {
   Piece(int k) {
     kind = k < 0 ? int(random(0, 7)) : k;
     c = colors[kind];
-    r = 0;
+    rotation = 0;
     pos = pieces.pos[kind];
   }
 
@@ -300,19 +303,19 @@ class Piece {
     //texture(texture);
     pushMatrix();
     if (!still) {
-      translate(160, 40);
-      translate(x*q, y*q);
+      translate(200, 40);
+      translate(x*sizeOfCube, y*sizeOfCube);
     }
-    int rot = still ? 0 : r;
+    int rot = still ? 0 : rotation;
     for (int i = 0; i < 4; i++) {
-      //rect(pos[rot][i][0] * q, pos[rot][i][1] * q, 20, 20);
-      //image(texture, pos[rot][i][0] * q, pos[rot][i][1] * q, 20, 20);
-      image(figures[kind], pos[rot][i][0] * q, pos[rot][i][1] * q, 30, 30);
+      //rect(pos[rot][i][0] * sizeOfCube, pos[rot][i][1] * sizeOfCube, 20, 20);
+      //image(texture, pos[rot][i][0] * sizeOfCube, pos[rot][i][1] * sizeOfCube, 20, 20);
+      image(figures[kind], pos[rot][i][0] * sizeOfCube, pos[rot][i][1] * sizeOfCube, sizeOfCube, sizeOfCube);
     }
     popMatrix();
   }
 
-  // returns true if the piece can go one step down
+  // goes down if can else piece is added to grid
   void oneStepDown() {
     y += 1;
     if(!grid.pieceFits()){
@@ -337,28 +340,28 @@ class Piece {
   void inputKey(int k) {
     switch(k) {
     case LEFT:
-      x --;
+      oneStepLeft();
       if(grid.pieceFits()){
         //soundLeftRight();
       }else {
-         x++;
+         oneStepRight();
       }
       break;
     case RIGHT:
-      x ++;
+      oneStepRight();
       if(grid.pieceFits()){
         //soundLeftRight();
       }else{
-         x--;
+         oneStepLeft();
       }
       break;
     case DOWN:
       oneStepDown();
       break;
     case UP:
-      r = (r+1)%4;
+      rotation = (rotation+1)%4;
       if(!grid.pieceFits()){
-         r = r-1 < 0 ? 3 : r-1;
+         rotation = rotation-1 < 0 ? 3 : rotation-1;
          //soundRotationFail();
       }else{
         //soundRotation();
@@ -570,6 +573,7 @@ class Pieces {
 class Score {
   int points = 0;
 
+//20 bodova po liniji, ako odjednom srušiš 4 i više linija dobivaš 200 bodova - kakti combo -->uvijek puta level
   void addLinePoints(int nb) {
     if (nb == 4) {
       points += level * 10 * 20;
@@ -578,10 +582,12 @@ class Score {
     }
   }
 
+//5 bodova po obliku skalarno po levelima, 5,10,5.....
   void addPiecePoints() {
     points += level * 5;
   }
 
+//100 bodova po levelu puta level
   void addLevelPoints() {
     points += level * 100;
   }
@@ -606,42 +612,42 @@ class Score {
     fill(textColor);
     text("lines: ", 0, 6*txtSize);
     fill(230, 230, 12);
-    text("" + nbLines, 0, 7*txtSize);
+    text("" + numberOfFullLines, 0, 7*txtSize);
     popMatrix();
 
     pushMatrix();
-    translate(800, 60);
+    translate(980, 60);
 
     //score
     fill(textColor);
     text("next: ", 0, 0);
 
-    translate(1.2*q, 1.5*q);
+    translate(1.2*sizeOfCube, 1.5*sizeOfCube);
     nextPiece.display(true);
     popMatrix();
   }
 
   String formatPoint(int p) {
     String txt = "";
-    int qq = int(p/1000000);
-    if (qq > 0) {
-      txt += qq + ".";
-      p -= qq * 1000000;
+    int temp = int(p/1000000);
+    if (temp > 0) {
+      txt += temp + ".";
+      p -= temp * 1000000;
     }
 
-    qq = int(p/1000);
+    temp = int(p/1000);
     if (txt != "") {
-      if (qq == 0) {
+      if (temp == 0) {
         txt += "000";
-      } else if (qq < 10) {
+      } else if (temp < 10) {
         txt += "00";
-      } else if (qq < 100) {
+      } else if (temp < 100) {
         txt += "0";
       }
     }
-    if (qq > 0) {
-      txt += qq;
-      p -= qq * 1000;
+    if (temp > 0) {
+      txt += temp;
+      p -= temp * 1000;
     }
     if (txt != "") {
       txt += ".";
