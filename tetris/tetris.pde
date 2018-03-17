@@ -67,6 +67,7 @@ void draw() {
     grid.drawGrid();
     int timer = millis();
     if (gameOn) {
+      //promjena vremena ide po sekundama, svaku sekundu se spušta oblik
       if (timer - currentTime > dt) {
         currentTime = timer;
         piece.oneStepDown();
@@ -133,9 +134,13 @@ void keyPressed() {
         rect(150, 190, 500, 2*txtSize, 3);
         fill(textColor);
         text("press 'p' to resume playing!", 170, 220);
+        player.pause();
         noLoop();
         }
-        else loop();
+        else {
+          loop();
+          player.loop();
+        }
       }
   }
 }
@@ -302,7 +307,7 @@ class Piece {
     for (int i = 0; i < 4; i++) {
       //rect(pos[rot][i][0] * q, pos[rot][i][1] * q, 20, 20);
       //image(texture, pos[rot][i][0] * q, pos[rot][i][1] * q, 20, 20);
-      image(figures[kind], pos[rot][i][0] * q, pos[rot][i][1] * q, 20, 20);
+      image(figures[kind], pos[rot][i][0] * q, pos[rot][i][1] * q, 30, 30);
     }
     popMatrix();
   }
