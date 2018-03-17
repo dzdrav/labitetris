@@ -1,4 +1,4 @@
-int w = 16;
+int w = 12;
 int h = 25;
 int sizeOfCube = 30;
 int dt; // delay between each move
@@ -135,7 +135,7 @@ void keyPressed() {
         fill(255, 60);
         rect(200, 190, 500, 2*txtSize, 3);
         fill(textColor);
-        text("press 'p' to resume playing!", 170, 220);
+        text("press 'p' to resume playing!", 210, 220);
         player.pause();
         noLoop();
         }
@@ -616,7 +616,7 @@ class Score {
     popMatrix();
 
     pushMatrix();
-    translate(680, 60);
+    translate(600, 60);
 
     //score
     fill(textColor);
