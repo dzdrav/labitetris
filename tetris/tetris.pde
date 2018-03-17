@@ -1,6 +1,6 @@
 int w = 16;
 int h = 25;
-int sizeOfCube = 45;
+int sizeOfCube = 30;
 int dt; // delay between each move
 int currentTime;
 Grid grid;
@@ -13,7 +13,7 @@ int level = 1;
 int numberOfFullLines = 0;
 
 
-int txtSize = 30;
+int txtSize = 25;
 int textColor = color(34, 230, 190);
 
 Boolean gameOver = false;
@@ -37,8 +37,8 @@ String[] figureNames = {"figure-one.png"
 PImage[] figures = new PImage[figureNames.length];
 
 void setup() {
-  size(1250, 1205, P2D);
-  textSize(30);
+  size(800, 800, P2D);
+  textSize(txtSize);
   // dzdrav loading textures for the shapes
   for (int i = 0; i < figureNames.length; ++i){
     figures[i] = loadImage(figureNames[i]);
@@ -133,7 +133,7 @@ void keyPressed() {
         if(looping) {
         noStroke();
         fill(255, 60);
-        rect(150, 190, 500, 2*txtSize, 3);
+        rect(200, 190, 500, 2*txtSize, 3);
         fill(textColor);
         text("press 'p' to resume playing!", 170, 220);
         player.pause();
@@ -616,7 +616,7 @@ class Score {
     popMatrix();
 
     pushMatrix();
-    translate(980, 60);
+    translate(680, 60);
 
     //score
     fill(textColor);

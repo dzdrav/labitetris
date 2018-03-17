@@ -22,10 +22,10 @@ int state_init = 0;
 int state_run = 1;
 int state_end = 2;
 
-int velicina_kvadrata = 25;
-int broj_kvadrata_x = 50;
-int broj_kvadrata_y = 45;
-int dim_tekst_okvira = 80;
+int velicina_kvadrata = 20;
+int broj_kvadrata_x = 40;
+int broj_kvadrata_y = 35;
+int dim_tekst_okvira = 100;
 int tekst_pomak = dim_tekst_okvira / 4;
 int sirina = 630;
 int pocetak_teksta_y = (broj_kvadrata_y + 1) * velicina_kvadrata;
@@ -435,7 +435,7 @@ int [][] dirset = {
 Game game;
 PFont font;
 void setup () {
-  size (1250,1205);
+  size (800,800);
  
   colorMode(RGB, height, height, height);
   background(white);
