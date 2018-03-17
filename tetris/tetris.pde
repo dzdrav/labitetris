@@ -1,4 +1,4 @@
-int w = 16;
+int w = 12;
 int h = 25;
 int sizeOfCube = 30;
 int dt; // delay between each move
