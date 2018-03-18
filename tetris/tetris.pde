@@ -19,7 +19,7 @@ int textColor = color(34, 230, 190);
 Boolean gameOver = false;
 Boolean gameOn = false;
 
-// sound
+// sound library
 import ddf.minim.*;
 
 Minim minim;
@@ -34,12 +34,13 @@ String[] figureNames = {"figure-one.png"
         ,"figure-five.png"
         ,"figure-six.png"
         ,"figure-seven.png"};
+// elementi polja su sličice koje predstavljaju kvadratić n-te figurice
 PImage[] figures = new PImage[figureNames.length];
 
 void setup() {
   size(800, 800, P2D);
   textSize(txtSize);
-  // dzdrav loading textures for the shapes
+  // dzdrav: loading textures for the shapes
   for (int i = 0; i < figureNames.length; ++i){
     figures[i] = loadImage(figureNames[i]);
   }
@@ -75,6 +76,7 @@ void draw() {
     }
     piece.display(false);
     score.display();
+    // glazba se ponavlja (loop)
     if (!player.isPlaying()){
       player.loop();
     }
