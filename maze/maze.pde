@@ -64,6 +64,11 @@ class Game {
     void Start() {
      if (_state == state_init) {
        Run();
+
+       // glazba se ponavlja (loop)
+       if (!player.isPlaying()){
+         player.loop();
+       }
        return;
      }
     }
@@ -102,6 +107,12 @@ class Game {
       text(p , sirina / 2, pocetak_teksta_y + 2*tekst_pomak);
       String d = "Best : " + _maze.getMaxDistance () + " steps";
       text(d , sirina / 2, pocetak_teksta_y + 3*tekst_pomak);
+
+      // pauziranje pozadinske glazbe
+      player.pause();
+      player.rewind();
+      // pobjednička glazba
+      win_sound.play();
     }
 
     void ClearTextArea () {
@@ -440,7 +451,9 @@ import ddf.minim.*;
 
 Minim minim;
 AudioPlayer player;
+AudioPlayer win_sound;
 String music_name = "theme_music_maze.mp3";
+String music_win = "music_win.mp3";
 
 void setup () {
   size (800,800);
@@ -456,15 +469,12 @@ void setup () {
   // music setup
   minim = new Minim(this);
   player = minim.loadFile(music_name);
+  win_sound = minim.loadFile(music_win);
 
   game = new Game ();
 }
 
 void draw () {
-  //music playback
-  if (!player.isPlaying()){
-    player.loop();
-  }
   game.Manage();
 }
 

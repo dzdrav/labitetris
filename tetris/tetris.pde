@@ -87,6 +87,8 @@ void draw() {
     rect(200, 260, 240, 2*txtSize, 3);
     fill(textColor);
     text("Game Over", 225, 290);
+
+    // pauziranje glazbe
     player.pause();
   }
   if (!gameOn) {
