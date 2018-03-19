@@ -160,12 +160,31 @@ class Grid {
         cells[i][j] = 0;
   }
 
+  int ColorToInt(color c){
+    if (c == color(128, 12, 128))
+        return 0;
+    else if (c == color(230, 12, 12)) //red
+        return 1;
+    else if (c == color(12, 230, 12)) //green
+        return 2;
+    else if (c == color(9, 239, 230)) //cyan
+        return 3;
+    else if (c == color(230, 230, 9)) //yellow
+        return 4;
+    else if (c == color(230, 128, 9)) //orange
+        return 5;
+    else if (c == color(12, 12, 230)) //blue
+        return 6;
+    else
+      return -1;
+  }
+
   Boolean isFree(int x, int y) {
     if (x > -1 && x < w && y > -1 && y < h)
       return cells[x][y] == 0;
     else if (y < 0)
       return true;
-   //println("WARNING: trying to access out of bond cell, x: "+x+" y: "+y);
+    //println("WARNING: trying to access out of bond cell, x: "+x+" y: "+y);
     return false;
   }
 
@@ -206,7 +225,7 @@ class Grid {
     drawGrid();
   }
 
-//check for full lines and delete them
+  //check for full lines and delete them
   void checkFullLines() {
     int nb = 0; //number of full lines
     for (int j = 0; j < h; j ++) {
@@ -267,8 +286,10 @@ class Grid {
     for (int i = 0; i < w; i ++) {
       for (int j = 0; j < h; j ++) {
         if (cells[i][j] != 0) {
-          fill(cells[i][j]);
-          rect(i*sizeOfCube, j*sizeOfCube, sizeOfCube, sizeOfCube);
+          //fill(cells[i][j]);
+          //rect(i*sizeOfCube, j*sizeOfCube, sizeOfCube, sizeOfCube);
+          //TODO
+          image(figures[ColorToInt(cells[i][j])], i*sizeOfCube, j*sizeOfCube, sizeOfCube, sizeOfCube);
         }
       }
     }
@@ -313,7 +334,6 @@ class Piece {
     int rot = still ? 0 : rotation;
     for (int i = 0; i < 4; i++) {
       //rect(pos[rot][i][0] * sizeOfCube, pos[rot][i][1] * sizeOfCube, 20, 20);
-      //image(texture, pos[rot][i][0] * sizeOfCube, pos[rot][i][1] * sizeOfCube, 20, 20);
       image(figures[kind], pos[rot][i][0] * sizeOfCube, pos[rot][i][1] * sizeOfCube, sizeOfCube, sizeOfCube);
     }
     popMatrix();
@@ -577,7 +597,7 @@ class Pieces {
 class Score {
   int points = 0;
 
-//20 bodova po liniji, ako odjednom srušiš 4 i više linija dobivaš 200 bodova - kakti combo -->uvijek puta level
+  //20 bodova po liniji, ako odjednom srušiš 4 i više linija dobivaš 200 bodova - kakti combo -->uvijek puta level
   void addLinePoints(int nb) {
     if (nb == 4) {
       points += level * 10 * 20;
@@ -586,12 +606,12 @@ class Score {
     }
   }
 
-//5 bodova po obliku skalarno po levelima, 5,10,5.....
+  //5 bodova po obliku skalarno po levelima, 5,10,5.....
   void addPiecePoints() {
     points += level * 5;
   }
 
-//100 bodova po levelu puta level
+  //100 bodova po levelu puta level
   void addLevelPoints() {
     points += level * 100;
   }
