@@ -1,10 +1,13 @@
 // menu globalan jer mu pristupamo i u draw() i u mouseClicked()
 Menu mainMenu;
+PImage menu_background;
 
 void setup(){
   size(800, 800, P2D);
-  // konstruktor: Menu(spacing, itemHeight, itemWidth, textSize)
-  mainMenu = new Menu(30, 60, 250, 20);
+  menu_background = loadImage("menu_background.jpg");
+  //background(menu_background);
+  // konstruktor: Menu(spacing, itemHeight, itemWidth, textSize, background)
+  mainMenu = new Menu(30, 60, 250, 20, menu_background);
   mainMenu.AddMenuItem("Tetris");
   mainMenu.AddMenuItem("Pravila tetrisa");
   mainMenu.AddMenuItem("Labirint");
@@ -61,18 +64,24 @@ class Menu{
   private color m_itemAccentColor;
   private color m_textColor;
   private color m_textAccentColor;
+  private PImage m_background = null;
 
   // konstruktor
   Menu(int spacing, int itemHeight, int itemWidth, int textSize){
-    //m_length = 0;
     m_spacing = spacing;
     m_itemHeight = itemHeight;
     m_itemWidth = itemWidth;
     m_textSize = textSize;
-    m_itemColor = color(130,130,130);
-    m_itemAccentColor = color(200,200,200);
+    // defaultne boje, mogu se promijeniti setterima
+    m_itemColor = #ED4A3B;
+    m_itemAccentColor = #1FE3F4;
     m_textColor = color(255,255,255);
     m_textAccentColor = color(0,0,0);
+  }
+  // konstruktor koji prima PImage background
+  Menu(int spacing, int itemHeight, int itemWidth, int textSize, PImage bg){
+    this(spacing, itemHeight, itemWidth, textSize);
+    m_background = bg;
   }
   // nakon svakog umetanja itema, ažurira listu središta menu itema
   private void UpdateCenters(){
@@ -89,7 +98,6 @@ class Menu{
   void AddMenuItem(String item){
     m_items.add(item);
     UpdateCenters();
-    //m_length += 1;
   }
   String GetMenuItem(int i){
     return m_items.get(i);
@@ -136,18 +144,33 @@ class Menu{
   public color itemColor(){
     return m_itemColor;
   }
+  public void SetItemColor(color value){
+    m_itemColor = value;
+  }
   public color itemAccentColor(){
     return m_itemAccentColor;
+  }
+  public void SetItemAccentColor(color value){
+    m_itemAccentColor = value;
   }
   public color textColor(){
     return m_textColor;
   }
+  public void SetTextColor(color value){
+    m_textColor = value;
+  }
   public color textAccentColor(){
     return m_textAccentColor;
+  }
+  public void SetTextAccentColor(color value){
+    m_textAccentColor = value;
   }
 
   // prikazuje meni sa svim stavkama
   void Display(){
+    if (m_background != null){
+      background(m_background);
+    }
     for (int i = 0; i < m_items.size(); ++i){
       if (MouseOverItem(i))
         DrawMenuItem(i, m_itemAccentColor, m_textAccentColor);
