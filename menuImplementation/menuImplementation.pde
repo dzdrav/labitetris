@@ -5,7 +5,6 @@ PImage menu_background;
 void setup(){
   size(800, 800, P2D);
   menu_background = loadImage("menu_background.jpg");
-  //background(menu_background);
   // konstruktor: Menu(spacing, itemHeight, itemWidth, textSize, background)
   mainMenu = new Menu(30, 60, 250, 20, menu_background);
   mainMenu.AddMenuItem("Tetris");
