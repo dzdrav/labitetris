@@ -5,8 +5,8 @@ PImage menu_background;
 void setup(){
   size(800, 800, P2D);
   menu_background = loadImage("menu_background.jpg");
-  // konstruktor: Menu(spacing, itemHeight, itemWidth, textSize, background)
-  mainMenu = new Menu(30, 60, 250, 20, menu_background);
+  // konstruktor: Menu(int textSize, PImage background)
+  mainMenu = new Menu(22, menu_background);
   mainMenu.AddMenuItem("Tetris");
   mainMenu.AddMenuItem("Pravila tetrisa");
   mainMenu.AddMenuItem("Labirint");
@@ -55,31 +55,36 @@ class Menu{
   // menu itemi se crtaju na temelju lokacije središta, širine i visine
   private IntList m_centers;
   // ostale varijable članice
-  private int m_spacing;
-  private int m_itemHeight;
-  private int m_itemWidth;
+  private int m_spacing = 0;
+  private int m_itemHeight = 0;
+  private int m_itemWidth = 0;
   private int m_textSize;
   private color m_itemColor;
   private color m_itemAccentColor;
   private color m_textColor;
   private color m_textAccentColor;
   private PImage m_background = null;
+  private PFont m_menuFont;
 
   // konstruktor
-  Menu(int spacing, int itemHeight, int itemWidth, int textSize){
-    m_spacing = spacing;
-    m_itemHeight = itemHeight;
-    m_itemWidth = itemWidth;
+  Menu(int textSize){
     m_textSize = textSize;
     // defaultne boje, mogu se promijeniti setterima
-    m_itemColor = #ED4A3B;
+    m_itemColor = #FF00FF;
     m_itemAccentColor = #1FE3F4;
     m_textColor = color(255,255,255);
     m_textAccentColor = color(0,0,0);
+    // postavljanje fonta
+    m_menuFont = createFont("PressStart2P.ttf", m_textSize, true);
+    textFont(m_menuFont);
+    textSize(m_textSize);
+    m_itemHeight = int(textAscent() + textDescent());
+    m_itemHeight *= 2.5;
+    m_spacing = m_itemHeight / 2;
   }
   // konstruktor koji prima PImage background
-  Menu(int spacing, int itemHeight, int itemWidth, int textSize, PImage bg){
-    this(spacing, itemHeight, itemWidth, textSize);
+  Menu(int textSize, PImage bg){
+    this(textSize);
     m_background = bg;
   }
   // nakon svakog umetanja itema, ažurira listu središta menu itema
@@ -97,6 +102,12 @@ class Menu{
   void AddMenuItem(String item){
     m_items.add(item);
     UpdateCenters();
+    // ažuriranje širine menu itema
+    textFont(m_menuFont);
+    textSize(m_textSize);
+    if (textWidth(item) > m_itemWidth){
+      m_itemWidth = int(textWidth(item) + 4 * textWidth('c')); 
+    }
   }
   String GetMenuItem(int i){
     return m_items.get(i);
@@ -107,6 +118,7 @@ class Menu{
     if (i <= m_items.size()){
       rectMode(CENTER);
       textAlign(CENTER, CENTER);
+      textFont(m_menuFont);
       textSize(m_textSize);
       fill(bgColor);
       rect(width / 2, m_centers.get(i), m_itemWidth, m_itemHeight,3,12,3,12);
