@@ -1,6 +1,73 @@
-// menu globalan jer mu pristupamo i u draw() i u mouseClicked()
+// sound library
+import ddf.minim.*;
+
+color white = color (0xFF, 0xFF, 0xFF);
+color blue = color (0x00, 0x00, 0xFF);
+color red = color (0xFF, 0x00, 0x00);
+color gray = color (0x80, 0x80, 0x80);
+color green = color (0x00, 0xFF, 0x00);
+color black = color (0x00, 0x00, 0x00);
+
+int w = 12;
+int h = 25;
+int sizeOfCube = 30;
+int dt; // delay between each move
+int currentTime;
+Grid grid;
+Piece piece;
+Piece nextPiece;
+Pieces pieces;
+Score score;
+int rotation = 0;//rotation status, from 0 to 3
+int level = 1;
+int numberOfFullLines = 0;
+
+
+int txtSize = 25;
+int textColor = color(34, 230, 190);
+
+Boolean gameOver = false;
+Boolean gameOn = false;
+
+
+int state_init = 0;
+int state_run = 1;
+int state_end = 2;
+
+int velicina_kvadrata = 20;
+int broj_kvadrata_x = 40;
+int broj_kvadrata_y = 35;
+int dim_tekst_okvira = 100;
+int tekst_pomak = dim_tekst_okvira / 4;
+int sirina = 800;
+int pocetak_teksta_y = (broj_kvadrata_y + 1) * velicina_kvadrata;
+
+// dzdrav: shape texture files
+String[] figureNames = {"figure-one.png"
+        ,"figure-two.png"
+        ,"figure-three.png"
+        ,"figure-four.png"
+        ,"figure-five.png"
+        ,"figure-six.png"
+        ,"figure-seven.png"};
+// elementi polja su sličice koje predstavljaju kvadratić n-te figurice
+PImage[] figures = new PImage[figureNames.length];
+
 Menu mainMenu;
+MazeGame mazeGame;
+TetrisGame tetrisGame;
+
 PImage menu_background;
+int selectedItem=100;
+PFont font;
+
+Minim minim;
+AudioPlayer tetrisPlayer;
+AudioPlayer player;
+AudioPlayer win_sound;
+String music_name = "theme_music_maze.mp3";
+String music_win = "music_win.mp3";
+String music_tetris = "theme_music.mp3";
 
 void setup(){
   size(800, 800, P2D);
@@ -11,12 +78,65 @@ void setup(){
   mainMenu.AddMenuItem("Pravila tetrisa");
   mainMenu.AddMenuItem("Labirint");
   mainMenu.AddMenuItem("Pravila labirinta");
+  
+  tetrisGame = new TetrisGame();
+  mazeGame = new MazeGame ();
+  
+  minim = new Minim(this);
+  player = minim.loadFile(music_name);
+  win_sound = minim.loadFile(music_win);
+  tetrisPlayer = minim.loadFile(music_tetris);
+  
+  for (int i = 0; i < figureNames.length; ++i){
+          figures[i] = loadImage(figureNames[i]);
+        }
+  
+  textSize(txtSize);
 }
 
 void draw(){
-  background(60);
-  mainMenu.Display();
+  //background(60);
+  switch(selectedItem){
+    case 0:
+      // pokreni tetris
+      tetrisGame.Manage();  
+      break;
+    case 1:
+      // pravila tetrisa
+      println("Gumb 2");
+      break;
+    case 2:
+      // pokreni labirint
+      font = createFont("Arial",20,true);  // Loading font
+      textFont(font);
+      colorMode(RGB, height, height, height);
+      background(white);
+      noFill();
+      noStroke ();
+      mazeGame.Manage();
+      break;
+    case 3:
+      // pravila labirinta
+      println("Gumb 4");
+      break;
+  default:mainMenu.Display();
+      break;
+  }
 }
+
+void keyPressed() {
+  switch(selectedItem){
+    case 0:
+      // igraj tetris
+      tetrisGame.KeyPressed(key);
+      break;
+    case 2:
+      // igraj labirint
+      mazeGame.KeyPressed (key);
+      break;
+  }
+}
+
 
 // u ovoj funkciji pokrećemo opcije iz menija
 void mouseClicked(){
@@ -26,6 +146,7 @@ void mouseClicked(){
     case 0:
       // pokreni tetris
       println("Gumb 1");
+      selectedItem=0;
       break;
     case 1:
       // pravila tetrisa
@@ -34,6 +155,7 @@ void mouseClicked(){
     case 2:
       // pokreni labirint
       println("Gumb 3");
+      selectedItem=2;
       break;
     case 3:
       // pravila labirinta
@@ -188,5 +310,1085 @@ class Menu{
       else
         DrawMenuItem(i, m_itemColor, m_textColor);
     }
+  }
+}
+
+class MazeGame {
+  MazeGame () {
+    Reset();
+  }
+
+    void Reset () {
+      _state = state_init;
+
+       int p = int (random(1,6));
+       //veći p = lakši labirint (u smislu glađih zidova)
+
+      _maze = new Maze(broj_kvadrata_y, broj_kvadrata_x , p);
+      _maze.compute ();
+      _maze.show (velicina_kvadrata);
+
+      _needToRedraw = true;
+
+      _startTime = 0;
+      _endTime = 0;
+
+      ClearTextArea();
+
+      textAlign(CENTER);
+      fill(black);
+      text("Press SPACE to start", sirina / 2, pocetak_teksta_y);
+    }
+
+    void Start() {
+     if (_state == state_init) {
+       Run();
+
+       // glazba se ponavlja (loop)
+       if (!player.isPlaying()){
+         player.loop();
+       }
+       return;
+     }
+    }
+    void Move () {
+      if (_state == state_run) {
+        if (keyCode == LEFT) _maze.goLeft();
+        else if (keyCode == RIGHT) _maze.goRight();
+        else if (keyCode == DOWN) _maze.goDown();
+        else if (keyCode == UP) _maze.goUp();
+      }
+    }
+
+    void Run() {
+      _state = state_run;
+      _startTime = millis();
+
+      // Clear and draw score
+      ClearTextArea();
+    }
+
+    void End() {
+      _state = state_end;
+      _endTime = millis();
+
+      ClearTextArea();
+
+      textAlign(CENTER);
+      fill(black);
+      text("FINISHED in",sirina / 2, pocetak_teksta_y);
+      int delta = (_endTime - _startTime) / 1000;
+      int m = delta / 60;
+      int s = (delta - m*60);
+      String ti = "Time : " + m + "'" + s + "\"";
+      text(ti ,sirina / 2, pocetak_teksta_y + tekst_pomak);
+      String p = "Current : " + _maze.getStep() + " steps";
+      text(p , sirina / 2, pocetak_teksta_y + 2*tekst_pomak);
+      String d = "Best : " + _maze.getMaxDistance () + " steps";
+      text(d , sirina / 2, pocetak_teksta_y + 3*tekst_pomak);
+
+      // pauziranje pozadinske glazbe
+      player.pause();
+      player.rewind();
+      // pobjednička glazba
+      win_sound.play();
+    }
+
+    void ClearTextArea () {
+      fill (white);
+      rect(0, velicina_kvadrata * broj_kvadrata_y ,broj_kvadrata_x * velicina_kvadrata , dim_tekst_okvira);
+    }
+
+    void KeyPressed (int k) {
+      if (k == 'r') Reset(); // Resetting game
+      if (k == ' ') Start(); // Start
+
+      Move ();
+    }
+
+    void Manage() {
+      if (_state == state_run) {
+        if (_maze.AtEnd()) End();
+        else { // Updating current time
+          fill (white);
+          rect(0, velicina_kvadrata * broj_kvadrata_y ,broj_kvadrata_x * velicina_kvadrata , dim_tekst_okvira);
+          fill (black);
+          int delta = (millis() - _startTime) / 1000;
+          int m = delta / 60;
+          int s = (delta - m*60);
+          String ti = "Time : " + m + "'" + s + "\"";
+          text(ti ,sirina / 2, pocetak_teksta_y + tekst_pomak);
+        }
+      }
+   }
+
+    int _state;
+    boolean _needToRedraw;
+
+    int _startTime;
+    int _endTime;
+
+    Maze _maze;
+};
+
+int WALL=0;
+int BORDER=1;
+int PAS=2;
+//=============== NODE ================
+class Node {
+  int _x;
+  int _y;
+  int _dir;
+  int _distance;
+
+  Node (int x, int y, int dir, int distance)  {
+    _x = x;
+    _y = y;
+    _dir = dir;
+    _distance = distance;
+  }
+
+  int getX () { return _x; }
+  int getY () { return _y; }
+  int getDir () { return _dir; }
+  int getDistance () { return _distance; }
+
+};
+
+//=============== MAZE ================
+class Maze {
+  Maze (int h, int w, int p) {
+    _h = h;
+    _w = w;
+    _sx = 1;
+    _sy = 1;
+    _dirs = 0;
+    _p = p;
+
+    _m = new int [_h][_w];
+    _nodes = new ArrayList();
+
+   // reset();
+  }
+
+
+void show (int velicina_kvadrata) {
+
+  _d = velicina_kvadrata;
+
+  // Maze
+  for (int j = 0; j < _h; ++j) {
+    for (int k = 0; k < _w; ++k) {
+      color col = red;
+      int val = _m[j][k];
+      if (val == WALL || val == BORDER) col = gray;
+      else if (val == PAS) col = white;
+
+      rectMode(CORNER);
+      fill(col);
+      rect(k*_d, j*_d, _d, _d);
+    }
+  }
+
+  // Starting point
+  fill(red);
+  rect(_sx*_d, _sy*_d, _d, _d);
+
+  // Ending point
+  fill(green);
+  rect(_ex*_d, _ey*_d, _d, _d);
+  }
+
+  void checkNode (Node aNode) {
+      int x = aNode.getX();
+      int y = aNode.getY();
+      int distance = aNode.getDistance();
+
+      switch (aNode.getDir()) {
+      case 1: if (TestN (x, y-1)) addNode (x, y-1, distance+1); break; // North
+      case 2: if (TestE (x+1, y)) addNode (x+1, y, distance+1); break; // East
+      case 3: if (TestS (x, y+1)) addNode (x, y+1, distance+1); break; // South
+      case 4: if (TestW (x-1, y)) addNode (x-1, y, distance+1); break; // West
+      default: break;
+      }
+  }
+
+  boolean TestN (int x, int y) {
+    if (_m[y][x] != WALL) return false;
+    if (_m[y-1][x] == PAS) return false;
+    if (_m[y][x-1] == PAS) return false;
+    if (_m[y][x+1] == PAS) return false;
+    return true;
+  }
+
+  boolean TestE (int x, int y) {
+    if (_m[y][x] != WALL) return false;
+    if (_m[y][x+1] == PAS) return false;
+    if (_m[y-1][x] == PAS) return false;
+    if (_m[y+1][x] == PAS) return false;
+    return true;
+}
+
+  boolean TestS (int x, int y) {
+    if (_m[y][x] != WALL) return false;
+    if (_m[y][x-1] == PAS) return false;
+    if (_m[y][x+1] == PAS) return false;
+    if (_m[y+1][x] == PAS) return false;
+    return true;
+  }
+
+  boolean TestW (int x, int y){
+    if (_m[y][x] != WALL) return false;
+    if (_m[y][x-1] == PAS) return false;
+    if (_m[y-1][x] == PAS) return false;
+    if (_m[y+1][x] == PAS) return false;
+    return true;
+  }
+
+  void reset () {
+    for (int y = 0; y < _h; ++y) {
+      for (int x = 0; x < _w; ++x) {
+        _m[y][x]= WALL;
+      }
+    }
+
+    for (int y= 0; y < _h; ++y) {
+      _m[y][0] = BORDER;
+      _m[y][_w-1] = BORDER;
+    }
+
+    for (int x= 0; x < _w; ++x) {
+      _m[0][x] = BORDER;
+      _m[_h-1][x] = BORDER;
+    }
+
+    _sx = int (random (1, _w-1));
+    _sy = int (random (1, _h-1));
+    _ex = _sx;
+    _ey = _sy;
+    _mx = _sx;
+    _my = _sy;
+
+    _maxdistance=0;
+
+     _d = 4;
+    _dirs = int (random (0, 24));
+  }
+
+  void addNode (int x, int y, int distance) {
+    // Compute new directions
+    if (_p > 1) {
+      if (int(random (0, _p)) == 0) {
+          _dirs = int(random (0, 24)); // Select moves order
+      }
+    }
+    else {
+      _dirs = int (random (0, 24)); // Select moves order
+    }
+
+    for (int idx = 0; idx < 4; ++idx) {
+      int direction = dirset[_dirs][idx];
+      _nodes.add (new Node (x, y, direction, distance));  // Adds 4 Nodes
+    }
+
+    _m[y][x] = PAS; // OK we walked on it
+
+    if (distance > _maxdistance) {
+      _maxdistance = distance;
+      _ex = x;
+      _ey = y;
+    }
+  }
+
+  void compute () {
+    reset ();
+
+    addNode (_sx, _sy, 0); // inserting first node
+    while (true) {
+      int n = _nodes.size();
+      if (n == 0) return; // The end
+
+      Node node = (Node) _nodes.get(n - 1); // Taking last one
+      _nodes.remove (n - 1);
+      checkNode (node);
+    }
+  }
+
+  int getCell (int y, int x) {
+    if (x >= _w || x < 0) return 0;
+    if (y >= _h || y < 0) return 0;
+    return _m[y][x];
+  }
+
+  int getMaxDistance () { return _maxdistance; }
+  int getStep () { return _step; }
+
+  boolean AtEnd() {
+    if (_my != _ey) return false;
+    if (_mx != _ex) return false;
+    return true;
+  }
+
+  void goLeft () {
+     if (_m[_my][_mx-1]==PAS) {
+        _step++;
+       fill(0xFF, 0xFF, 0xFF);
+       rect(_mx*_d, _my*_d, _d, _d);
+       _mx--;
+       fill(blue);
+       rect(_mx*_d, _my*_d, _d, _d);
+     }
+  }
+
+       void goRight () {
+         if (_m[_my][_mx+1]==PAS) {
+            _step++;
+           fill(0xFF, 0xFF, 0xFF);
+           rect(_mx*_d, _my*_d, _d, _d);
+           _mx++;
+           fill(blue);
+           rect(_mx*_d, _my*_d, _d, _d);
+         }
+      }
+
+  void goUp () {
+     if (_m[_my-1][_mx]==PAS) {
+        _step++;
+       fill(0xFF, 0xFF, 0xFF);
+       rect(_mx*_d, _my*_d, _d, _d);
+       _my--;
+       fill(blue);
+       rect(_mx*_d, _my*_d, _d, _d);
+     }
+  }
+
+       void goDown () {
+         if (_m[_my+1][_mx]==PAS) {
+            _step++;
+           fill(0xFF, 0xFF, 0xFF);
+           rect(_mx*_d, _my*_d, _d, _d);
+           _my++;
+           fill(blue);
+           rect(_mx*_d, _my*_d, _d, _d);
+         }
+      }
+
+  int [][]_m;
+  int _h, _w; // H & W
+  int _sx, _sy; // Starting point
+  int _ex, _ey; // Ending point
+
+  int _maxdistance; // Max distance between starting and ending point
+
+  int _d; // Drawing size for cells
+
+  // Navigation
+  int _step; // user steps
+  int _mx, _my; // Current user position
+
+  int _dirs;
+  int _p; // Change direction probablility : 1->each step, 4-> 1/4 step
+  ArrayList _nodes;
+};
+
+int [][] dirset = {
+    { 1, 2, 3, 4},
+    { 1, 2, 4, 3},
+    { 1, 3, 2, 4},
+    { 1, 3, 4, 2},
+    { 1, 4, 2, 3},
+    { 1, 4, 3, 2},
+
+    { 2, 1, 3, 4},
+    { 2, 1, 4, 3},
+    { 2, 3, 1, 4},
+    { 2, 3, 4, 1},
+    { 2, 4, 1, 3},
+    { 2, 4, 3, 1},
+
+    { 3, 1, 2, 4},
+    { 3, 1, 4, 2},
+    { 3, 2, 1, 4},
+    { 3, 2, 4, 1},
+    { 3, 4, 1, 2},
+    { 3, 4, 2, 1},
+
+    { 4, 1, 2, 3},
+    { 4, 1, 3, 2},
+    { 4, 2, 1 ,3},
+    { 4, 2, 3, 1},
+    { 4, 3, 1, 2},
+    { 4, 3, 2, 1}
+};
+
+
+//==============================================================
+
+class TetrisGame {
+  
+ TetrisGame() {
+      //initialize();
+  }
+  
+  void initialize() {
+      level = 1;
+      numberOfFullLines = 0;
+      dt = 1000;
+      currentTime = millis();
+      score = new Score();
+      grid = new Grid();
+      pieces = new Pieces();
+      piece = new Piece(-1);
+      nextPiece = new Piece(-1);
+  }
+  
+  void Manage() {
+       background(60);
+
+      if(grid != null) {
+        grid.drawGrid();
+        int timer = millis();
+          
+        if (gameOn) {
+          //promjena vremena ide po sekundama, svaku sekundu se spušta oblik
+          if (timer - currentTime > dt) {
+            currentTime = timer;
+            piece.oneStepDown();
+          }
+        }
+      piece.display(false);
+      score.display();
+      // glazba se ponavlja (loop)
+      if (!tetrisPlayer.isPlaying()){
+        tetrisPlayer.loop();
+      }
+    }        
+     if (gameOver) {
+          noStroke();
+          fill(255, 60);
+          rect(200, 260, 240, 2*txtSize, 3);
+          fill(textColor);
+          text("Game Over", 225, 290);
+      
+          // pauziranje glazbe
+          tetrisPlayer.pause();
+          tetrisPlayer.rewind();
+        }
+              
+        if (!gameOn) {
+          noStroke();
+          fill(255, 60);
+          rect(200, 190, 500, 2*txtSize, 3);
+          fill(textColor);
+          text("press 's' to start playing!", 210, 220);
+        }
+      
+  }
+  
+  void KeyPressed(int key) {
+      if (key == CODED && gameOn) {
+        switch(keyCode) {
+        case LEFT:
+        case RIGHT:
+        case DOWN:
+        case UP:
+        case SHIFT:
+          piece.inputKey(keyCode);
+          break;
+        }
+      } else if (keyCode == 83) {// "s"
+        if(!gameOn) {
+          initialize();
+          gameOver = false;
+          gameOn = true;
+        }
+      } else if (keyCode == 80) {// "p"
+          if(gameOn) {
+            if(looping) {
+            noStroke();
+            fill(255, 60);
+            rect(200, 190, 500, 2*txtSize, 3);
+            fill(textColor);
+            text("press 'p' to resume playing!", 210, 220);
+            tetrisPlayer.pause();
+            noLoop();
+            }
+            else {
+              loop();
+              tetrisPlayer.loop();
+            }
+          }
+      }    
+      else if (key == 'r') {
+          gameOn = false;
+          gameOver = false;
+          grid = null;
+          tetrisPlayer.rewind();
+      }
+      
+  }
+  
+}
+
+//================== GRID =================================
+
+class Grid {
+  int [][] cells = new int[w][h];
+
+  Grid() {
+    for (int i = 0; i < w; i ++)
+      for (int j = 0; j < h; j ++)
+        cells[i][j] = 0;
+  }
+  
+  void goToNextPiece() {
+    //nextPiece je globalna varijabla, u init je postavljena na random piece
+    piece = new Piece(nextPiece.kind);
+    nextPiece = new Piece(-1);
+    rotation = 0;
+  }
+  
+  void goToNextLevel() {
+    score.addLevelPoints();
+    level = 1 + int(numberOfFullLines / 10);
+    //sa svakim levelom idu kockice još malo brže :)
+    dt *= .8;
+  }
+
+  int ColorToInt(color c){
+    if (c == color(128, 12, 128))
+        return 0;
+    else if (c == color(230, 12, 12)) //red
+        return 1;
+    else if (c == color(12, 230, 12)) //green
+        return 2;
+    else if (c == color(9, 239, 230)) //cyan
+        return 3;
+    else if (c == color(230, 230, 9)) //yellow
+        return 4;
+    else if (c == color(230, 128, 9)) //orange
+        return 5;
+    else if (c == color(12, 12, 230)) //blue
+        return 6;
+    else
+      return -1;
+  }
+
+  Boolean isFree(int x, int y) {
+    if (x > -1 && x < w && y > -1 && y < h)
+      return cells[x][y] == 0;
+    else if (y < 0)
+      return true;
+    //println("WARNING: trying to access out of bond cell, x: "+x+" y: "+y);
+    return false;
+  }
+
+  Boolean pieceFits() {
+    int x = piece.x;
+    int y = piece.y;
+    int[][][] pos = piece.pos;
+    Boolean pieceOneStepDownOk = true;
+    for (int i = 0; i < 4; i ++) {
+      int tmpx = pos[rotation][i][0]+x;
+      int tmpy = pos[rotation][i][1]+y;
+      if (tmpy >= h || !isFree(tmpx, tmpy)) {
+        pieceOneStepDownOk = false;
+        break;
+      }
+    }
+    return pieceOneStepDownOk;
+  }
+
+  void addPieceToGrid() {
+    int x = piece.x;
+    int y = piece.y;
+    //println("addPieceToGrid x: "+x+" y: "+y);
+    int[][][] pos = piece.pos;
+    for (int i = 0; i < 4; i ++) {
+      if(pos[rotation][i][1]+y >= 0){
+        cells[pos[rotation][i][0]+x][pos[rotation][i][1]+y] = piece.c;
+      }else{
+        gameOn = false;
+        gameOver = true;
+        //println("game over");
+        return;
+      }
+    }
+    score.addPiecePoints();
+    checkFullLines();
+    goToNextPiece();
+    drawGrid();
+  }
+
+  //check for full lines and delete them
+  void checkFullLines() {
+    int nb = 0; //number of full lines
+    for (int j = 0; j < h; j ++) {
+      Boolean fullLine = true;
+      for (int i = 0; i < w; i++) {
+        fullLine = cells[i][j] != 0;
+        if (!fullLine)
+          break;
+      }
+      // this jth line if full, delete it
+      if (fullLine) {
+        nb++;
+        for (int k = j; k > 0; k--) {
+          for (int i = 0; i < w; i++)
+            cells[i][k] = cells[i][k-1];
+        }
+        // top line will be empty
+        for (int i = 0; i < w; i++) {
+          cells[i][0] = 0;
+        }
+      }
+    }
+    checkLevelAddPoints(nb);
+  }
+
+  void checkLevelAddPoints(int nb) {
+    //println("deleted lines: "+nb);
+    numberOfFullLines += nb;
+    if (int(numberOfFullLines / 10) > level-1) {
+      goToNextLevel();
+    }
+    score.addLinePoints(nb);
+  }
+
+  void setToBottom() {
+    //int originalY = piece.y;
+    int j = 0;
+    for (j = 0; j < h; j ++) {
+      if (!pieceFits())
+        break;
+      else
+        piece.y++;
+    }
+    piece.y--;
+    addPieceToGrid();
+  }
+
+  void drawGrid() {
+    stroke(120);
+    pushMatrix();
+    translate(200, 40);
+    for (int i = 0; i <= w; i ++)
+      line(i*sizeOfCube, 0, i*sizeOfCube, h*sizeOfCube);
+    for (int j = 0; j <= h; j ++)
+      line(0, j*sizeOfCube, w*sizeOfCube, j*sizeOfCube);
+
+    stroke(80);
+    for (int i = 0; i < w; i ++) {
+      for (int j = 0; j < h; j ++) {
+        if (cells[i][j] != 0) {
+          //fill(cells[i][j]);
+          //rect(i*sizeOfCube, j*sizeOfCube, sizeOfCube, sizeOfCube);
+          //TODO
+          image(figures[ColorToInt(cells[i][j])], i*sizeOfCube, j*sizeOfCube, sizeOfCube, sizeOfCube);
+        }
+      }
+    }
+    popMatrix();
+  }
+}
+
+//======================== PIECE =====================
+
+class Piece {
+  final color[] colors = {
+    color(128, 12, 128), //purple
+    color(230, 12, 12), //red
+    color(12, 230, 12), //green
+    color(9, 239, 230), //cyan
+    color(230, 230, 9), //yellow
+    color(230, 128, 9), //orange
+    color(12, 12, 230) //blue
+  };
+
+  // [rotation][block nb][x or y]
+  final int[][][] pos;
+  int x = int(w/2);
+  int y = 0;
+  int kind;
+  int c;
+
+  Piece(int k) {
+    kind = k < 0 ? int(random(0, 7)) : k;
+    c = colors[kind];
+    rotation = 0;
+    pos = pieces.pos[kind];
+  }
+
+  void display(Boolean still) {
+    stroke(250);
+    fill(c);
+    pushMatrix();
+    if (!still) {
+      translate(200, 40);
+      translate(x*sizeOfCube, y*sizeOfCube);
+    }
+    int rot = still ? 0 : rotation;
+    for (int i = 0; i < 4; i++) {
+      image(figures[kind], pos[rot][i][0] * sizeOfCube, pos[rot][i][1] * sizeOfCube, sizeOfCube, sizeOfCube);
+    }
+    popMatrix();
+  }
+
+  // goes down if can else piece is added to grid
+  void oneStepDown() {
+    y += 1;
+    if(!grid.pieceFits()){
+      piece.y -= 1;
+      grid.addPieceToGrid();
+    }
+  }
+  //go one step left
+  void oneStepLeft() {
+    x -= 1;
+  }
+
+  //go one step right
+  void oneStepRight() {
+    x += 1;
+  }
+
+  void goToBottom() {
+    grid.setToBottom();
+  }
+
+  void inputKey(int k) {
+    switch(k) {
+    case LEFT:
+      oneStepLeft();
+      if(grid.pieceFits()){
+        //soundLeftRight();
+      }else {
+         oneStepRight();
+      }
+      break;
+    case RIGHT:
+      oneStepRight();
+      if(grid.pieceFits()){
+        //soundLeftRight();
+      }else{
+         oneStepLeft();
+      }
+      break;
+    case DOWN:
+      oneStepDown();
+      break;
+    case UP:
+      rotation = (rotation+1)%4;
+      if(!grid.pieceFits()){
+         rotation = rotation-1 < 0 ? 3 : rotation-1;
+         //soundRotationFail();
+      }else{
+        //soundRotation();
+      }
+      break;
+    case SHIFT:
+      goToBottom();
+      break;
+    }
+  }
+}
+
+//========================= PIECES ================================
+
+class Pieces {
+  int[][][][] pos = new int [7][4][4][2];
+
+  Pieces() {
+    ////   @   ////
+    //// @ @ @ ////
+    pos[0][0][0][0] = -1;//piece 0, rotation 0, point nb 0, x
+    pos[0][0][0][1] = 0;// piece 0, rotation 0, point nb 0, y
+    pos[0][0][1][0] = 0;
+    pos[0][0][1][1] = 0;
+    pos[0][0][2][0] = 1;
+    pos[0][0][2][1] = 0;
+    pos[0][0][3][0] = 0;
+    pos[0][0][3][1] = 1;
+
+    pos[0][1][0][0] = 0;
+    pos[0][1][0][1] = 0;
+    pos[0][1][1][0] = 1;
+    pos[0][1][1][1] = 0;
+    pos[0][1][2][0] = 0;
+    pos[0][1][2][1] = -1;
+    pos[0][1][3][0] = 0;
+    pos[0][1][3][1] = 1;
+
+    pos[0][2][0][0] = -1;
+    pos[0][2][0][1] = 0;
+    pos[0][2][1][0] = 0;
+    pos[0][2][1][1] = 0;
+    pos[0][2][2][0] = 1;
+    pos[0][2][2][1] = 0;
+    pos[0][2][3][0] = 0;
+    pos[0][2][3][1] = -1;
+
+    pos[0][3][0][0] = -1;
+    pos[0][3][0][1] = 0;
+    pos[0][3][1][0] = 0;
+    pos[0][3][1][1] = 0;
+    pos[0][3][2][0] = 0;
+    pos[0][3][2][1] = -1;
+    pos[0][3][3][0] = 0;
+    pos[0][3][3][1] = 1;
+
+    //// @ @   ////
+    ////   @ @ ////
+    pos[1][0][0][0] = pos[1][2][0][0] = -1;//piece 1, rotation 0, point nb 0, x
+    pos[1][0][0][1] = pos[1][2][0][1] = 1;// piece 1, rotation 0, point nb 0, y
+    pos[1][0][1][0] = pos[1][2][1][0] = 0;
+    pos[1][0][1][1] = pos[1][2][1][1] = 1;
+    pos[1][0][2][0] = pos[1][2][2][0] = 0;
+    pos[1][0][2][1] = pos[1][2][2][1] = 0;
+    pos[1][0][3][0] = pos[1][2][3][0] = 1;
+    pos[1][0][3][1] = pos[1][2][3][1] = 0;
+
+    pos[1][1][0][0] = pos[1][3][0][0] = -1;
+    pos[1][1][0][1] = pos[1][3][0][1] = 0;
+    pos[1][1][1][0] = pos[1][3][1][0] = 0;
+    pos[1][1][1][1] = pos[1][3][1][1] = 0;
+    pos[1][1][2][0] = pos[1][3][2][0] = -1;
+    pos[1][1][2][1] = pos[1][3][2][1] = -1;
+    pos[1][1][3][0] = pos[1][3][3][0] = 0;
+    pos[1][1][3][1] = pos[1][3][3][1] = 1;
+
+    ////   @ @ ////
+    //// @ @   ////
+    pos[2][0][0][0] = pos[2][2][0][0] = 0;//piece 2, rotation 0 and 2, point nb 0, x
+    pos[2][0][0][1] = pos[2][2][0][1] = 1;//piece 2, rotation 0 and 2, point nb 0, y
+    pos[2][0][1][0] = pos[2][2][1][0] = 1;
+    pos[2][0][1][1] = pos[2][2][1][1] = 1;
+    pos[2][0][2][0] = pos[2][2][2][0] = -1;
+    pos[2][0][2][1] = pos[2][2][2][1] = 0;
+    pos[2][0][3][0] = pos[2][2][3][0] = 0;
+    pos[2][0][3][1] = pos[2][2][3][1] = 0;
+
+    pos[2][1][0][0] = pos[2][3][0][0] = 0;
+    pos[2][1][0][1] = pos[2][3][0][1] = 0;
+    pos[2][1][1][0] = pos[2][3][1][0] = 1;
+    pos[2][1][1][1] = pos[2][3][1][1] = 0;
+    pos[2][1][2][0] = pos[2][3][2][0] = 1;
+    pos[2][1][2][1] = pos[2][3][2][1] = -1;
+    pos[2][1][3][0] = pos[2][3][3][0] = 0;
+    pos[2][1][3][1] = pos[2][3][3][1] = 1;
+
+    ////// @ //////
+    ////// @ //////
+    ////// @ //////
+    ////// @ //////
+    pos[3][0][0][0] = pos[3][2][0][0] = 0;//piece 3, rotation 0 and 2, point nb 0, x
+    pos[3][0][0][1] = pos[3][2][0][1] = -1;//piece 3, rotation 0 and 2, point nb 0, y
+    pos[3][0][1][0] = pos[3][2][1][0] = 0;
+    pos[3][0][1][1] = pos[3][2][1][1] = 0;
+    pos[3][0][2][0] = pos[3][2][2][0] = 0;
+    pos[3][0][2][1] = pos[3][2][2][1] = 1;
+    pos[3][0][3][0] = pos[3][2][3][0] = 0;
+    pos[3][0][3][1] = pos[3][2][3][1] = 2;
+
+    pos[3][1][0][0] = pos[3][3][0][0] = -1;
+    pos[3][1][0][1] = pos[3][3][0][1] = 0;
+    pos[3][1][1][0] = pos[3][3][1][0] = 0;
+    pos[3][1][1][1] = pos[3][3][1][1] = 0;
+    pos[3][1][2][0] = pos[3][3][2][0] = 1;
+    pos[3][1][2][1] = pos[3][3][2][1] = 0;
+    pos[3][1][3][0] = pos[3][3][3][0] = 2;
+    pos[3][1][3][1] = pos[3][3][3][1] = 0;
+
+    //// @ @ ////
+    //// @ @ ////
+    //piece 4, all rotations are the same
+    pos[4][0][0][0] = pos[4][1][0][0] = pos[4][2][0][0] = pos[4][3][0][0] = 0;
+    pos[4][0][0][1] = pos[4][1][0][1] = pos[4][2][0][1] = pos[4][3][0][1] = 0;
+    pos[4][0][1][0] = pos[4][1][1][0] = pos[4][2][1][0] = pos[4][3][1][0] = 1;
+    pos[4][0][1][1] = pos[4][1][1][1] = pos[4][2][1][1] = pos[4][3][1][1] = 0;
+    pos[4][0][2][0] = pos[4][1][2][0] = pos[4][2][2][0] = pos[4][3][2][0] = 0;
+    pos[4][0][2][1] = pos[4][1][2][1] = pos[4][2][2][1] = pos[4][3][2][1] = 1;
+    pos[4][0][3][0] = pos[4][1][3][0] = pos[4][2][3][0] = pos[4][3][3][0] = 1;
+    pos[4][0][3][1] = pos[4][1][3][1] = pos[4][2][3][1] = pos[4][3][3][1] = 1;
+
+    ///// @   ////
+    ///// @   ////
+    ///// @ @ ////
+    pos[5][0][0][0] = 0;//piece 5, rotation 0, point nb 0, x
+    pos[5][0][0][1] = 1;//piece 5, rotation 0, point nb 0, y
+    pos[5][0][1][0] = 1;
+    pos[5][0][1][1] = 1;
+    pos[5][0][2][0] = 0;
+    pos[5][0][2][1] = 0;
+    pos[5][0][3][0] = 0;
+    pos[5][0][3][1] = -1;
+
+    pos[5][1][0][0] = 0;
+    pos[5][1][0][1] = 0;
+    pos[5][1][1][0] = 1;
+    pos[5][1][1][1] = 0;
+    pos[5][1][2][0] = 2;
+    pos[5][1][2][1] = 0;
+    pos[5][1][3][0] = 2;
+    pos[5][1][3][1] = -1;
+
+    pos[5][2][0][0] = 0;
+    pos[5][2][0][1] = -1;
+    pos[5][2][1][0] = 1;
+    pos[5][2][1][1] = -1;
+    pos[5][2][2][0] = 1;
+    pos[5][2][2][1] = 0;
+    pos[5][2][3][0] = 1;
+    pos[5][2][3][1] = 1;
+
+    pos[5][3][0][0] = 0;
+    pos[5][3][0][1] = 0;
+    pos[5][3][1][0] = 1;
+    pos[5][3][1][1] = 0;
+    pos[5][3][2][0] = 2;
+    pos[5][3][2][1] = 0;
+    pos[5][3][3][0] = 0;
+    pos[5][3][3][1] = 1;
+
+    ////   @ ////
+    ////   @ ////
+    //// @ @ ////
+    pos[6][0][0][0] = 0;//piece 6, rotation 0, point nb 0, x
+    pos[6][0][0][1] = 1;//piece 6, rotation 0, point nb 0, y
+    pos[6][0][1][0] = 1;
+    pos[6][0][1][1] = 1;
+    pos[6][0][2][0] = 1;
+    pos[6][0][2][1] = 0;
+    pos[6][0][3][0] = 1;
+    pos[6][0][3][1] = -1;
+
+    pos[6][1][0][0] = 0;
+    pos[6][1][0][1] = 0;
+    pos[6][1][1][0] = 1;
+    pos[6][1][1][1] = 0;
+    pos[6][1][2][0] = 2;
+    pos[6][1][2][1] = 0;
+    pos[6][1][3][0] = 2;
+    pos[6][1][3][1] = 1;
+
+    pos[6][2][0][0] = 0;
+    pos[6][2][0][1] = -1;
+    pos[6][2][1][0] = 1;
+    pos[6][2][1][1] = -1;
+    pos[6][2][2][0] = 0;
+    pos[6][2][2][1] = 0;
+    pos[6][2][3][0] = 0;
+    pos[6][2][3][1] = 1;
+
+    pos[6][3][0][0] = 0;
+    pos[6][3][0][1] = 0;
+    pos[6][3][1][0] = 1;
+    pos[6][3][1][1] = 0;
+    pos[6][3][2][0] = 2;
+    pos[6][3][2][1] = 0;
+    pos[6][3][3][0] = 0;
+    pos[6][3][3][1] = -1;
+  }
+}
+
+//============================ SCORE ======================
+
+class Score {
+  int points = 0;
+
+  //20 bodova po liniji, ako odjednom srušiš 4 i više linija dobivaš 200 bodova - kakti combo -->uvijek puta level
+  void addLinePoints(int nb) {
+    if (nb == 4) {
+      points += level * 10 * 20;
+    } else {
+      points += level * nb * 20;
+    }
+  }
+
+  //5 bodova po obliku skalarno po levelima, 5,10,5.....
+  void addPiecePoints() {
+    points += level * 5;
+  }
+
+  //100 bodova po levelu puta level
+  void addLevelPoints() {
+    points += level * 100;
+  }
+
+  void display() {
+    pushMatrix();
+    translate(40, 60);
+
+    //score
+    fill(textColor);
+    text("score: ", 0, 0);
+    fill(230, 230, 12);
+    text(""+formatPoint(points), 0, txtSize);
+
+    //level
+    fill(textColor);
+    text("level: ", 0, 3*txtSize);
+    fill(230, 230, 12);
+    text("" + level, 0, 4*txtSize);
+
+    //lines
+    fill(textColor);
+    text("lines: ", 0, 6*txtSize);
+    fill(230, 230, 12);
+    text("" + numberOfFullLines, 0, 7*txtSize);
+    popMatrix();
+
+    pushMatrix();
+    translate(600, 60);
+
+    //score
+    fill(textColor);
+    text("next: ", 0, 0);
+
+    translate(1.2*sizeOfCube, 1.5*sizeOfCube);
+    nextPiece.display(true);
+    popMatrix();
+  }
+
+  String formatPoint(int p) {
+    String txt = "";
+    int temp = int(p/1000000);
+    if (temp > 0) {
+      txt += temp + ".";
+      p -= temp * 1000000;
+    }
+
+    temp = int(p/1000);
+    if (txt != "") {
+      if (temp == 0) {
+        txt += "000";
+      } else if (temp < 10) {
+        txt += "00";
+      } else if (temp < 100) {
+        txt += "0";
+      }
+    }
+    if (temp > 0) {
+      txt += temp;
+      p -= temp * 1000;
+    }
+    if (txt != "") {
+      txt += ".";
+    }
+
+    if (txt != "") {
+      if (p == 0)
+        txt += "000";
+      else if (p < 10)
+        txt += "00" + p;
+      else if (p < 100)
+        txt += "0" + p;
+      else
+        txt += p;
+    }
+    else
+      txt += p;
+
+    return txt;
   }
 }
