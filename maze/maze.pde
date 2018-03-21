@@ -15,6 +15,7 @@
 color white = color (0xFF, 0xFF, 0xFF);
 color blue = color (0x00, 0x00, 0xFF);
 color red = color (0xFF, 0x00, 0x00);
+color gray = color (0x80, 0x80, 0x80);
 color green = color (0x00, 0xFF, 0x00);
 color black = color (0x00, 0x00, 0x00);
 
@@ -34,8 +35,8 @@ int pocetak_teksta_y = (broj_kvadrata_y + 1) * velicina_kvadrata;
 
 
 //=============== GAME ================
-class Game {
-  Game () {
+class MazeGame {
+  MazeGame () {
     Reset();
   }
 
@@ -152,8 +153,8 @@ class Game {
     Maze _maze;
 };
 
-int VIDE=0;
-int MUR=1;
+int WALL=0;
+int BORDER=1;
 int PAS=2;
 //=============== NODE ================
 class Node {
@@ -189,7 +190,7 @@ class Maze {
     _m = new int [_h][_w];
     _nodes = new ArrayList();
 
-    reset();
+   // reset();
   }
 
 
@@ -202,8 +203,8 @@ void show (int velicina_kvadrata) {
     for (int k = 0; k < _w; ++k) {
       color col = red;
       int val = _m[j][k];
-      if (val == VIDE || val == MUR) col = color (0x80, 0x80, 0x80);
-      else if (val == PAS) col = color (0xFF, 0xFF, 0xFF);
+      if (val == WALL || val == BORDER) col = gray;
+      else if (val == PAS) col = white;
 
       rectMode(CORNER);
       fill(col);
@@ -226,16 +227,16 @@ void show (int velicina_kvadrata) {
       int distance = aNode.getDistance();
 
       switch (aNode.getDir()) {
-      case 1: if (TestN (x, y-1)) addNode (x, y-1, distance+1); break; // N
-      case 2: if (TestE (x+1, y)) addNode (x+1, y, distance+1); break; // E
-      case 3: if (TestS (x, y+1)) addNode (x, y+1, distance+1); break; // S
-      case 4: if (TestW (x-1, y)) addNode (x-1, y, distance+1); break; // W
+      case 1: if (TestN (x, y-1)) addNode (x, y-1, distance+1); break; // North
+      case 2: if (TestE (x+1, y)) addNode (x+1, y, distance+1); break; // East
+      case 3: if (TestS (x, y+1)) addNode (x, y+1, distance+1); break; // South
+      case 4: if (TestW (x-1, y)) addNode (x-1, y, distance+1); break; // West
       default: break;
       }
   }
 
   boolean TestN (int x, int y) {
-    if (_m[y][x] != VIDE) return false;
+    if (_m[y][x] != WALL) return false;
     if (_m[y-1][x] == PAS) return false;
     if (_m[y][x-1] == PAS) return false;
     if (_m[y][x+1] == PAS) return false;
@@ -243,7 +244,7 @@ void show (int velicina_kvadrata) {
   }
 
   boolean TestE (int x, int y) {
-    if (_m[y][x] != VIDE) return false;
+    if (_m[y][x] != WALL) return false;
     if (_m[y][x+1] == PAS) return false;
     if (_m[y-1][x] == PAS) return false;
     if (_m[y+1][x] == PAS) return false;
@@ -251,7 +252,7 @@ void show (int velicina_kvadrata) {
 }
 
   boolean TestS (int x, int y) {
-    if (_m[y][x] != VIDE) return false;
+    if (_m[y][x] != WALL) return false;
     if (_m[y][x-1] == PAS) return false;
     if (_m[y][x+1] == PAS) return false;
     if (_m[y+1][x] == PAS) return false;
@@ -259,7 +260,7 @@ void show (int velicina_kvadrata) {
   }
 
   boolean TestW (int x, int y){
-    if (_m[y][x] != VIDE) return false;
+    if (_m[y][x] != WALL) return false;
     if (_m[y][x-1] == PAS) return false;
     if (_m[y-1][x] == PAS) return false;
     if (_m[y+1][x] == PAS) return false;
@@ -269,18 +270,18 @@ void show (int velicina_kvadrata) {
   void reset () {
     for (int y = 0; y < _h; ++y) {
       for (int x = 0; x < _w; ++x) {
-        _m[y][x]= VIDE;
+        _m[y][x]= WALL;
       }
     }
 
     for (int y= 0; y < _h; ++y) {
-      _m[y][0] = MUR;
-      _m[y][_w-1] = MUR;
+      _m[y][0] = BORDER;
+      _m[y][_w-1] = BORDER;
     }
 
     for (int x= 0; x < _w; ++x) {
-      _m[0][x] = MUR;
-      _m[_h-1][x] = MUR;
+      _m[0][x] = BORDER;
+      _m[_h-1][x] = BORDER;
     }
 
     _sx = int (random (1, _w-1));
@@ -300,7 +301,7 @@ void show (int velicina_kvadrata) {
     // Compute new directions
     if (_p > 1) {
       if (int(random (0, _p)) == 0) {
-  _dirs = int(random (0, 24)); // Select moves order
+          _dirs = int(random (0, 24)); // Select moves order
       }
     }
     else {
@@ -308,8 +309,8 @@ void show (int velicina_kvadrata) {
     }
 
     for (int idx = 0; idx < 4; ++idx) {
-      int d = dirset[_dirs][idx];
-      _nodes.add (new Node (x, y, d, distance));  // Adds 4 Nodes
+      int direction = dirset[_dirs][idx];
+      _nodes.add (new Node (x, y, direction, distance));  // Adds 4 Nodes
     }
 
     _m[y][x] = PAS; // OK we walked on it
@@ -443,7 +444,7 @@ int [][] dirset = {
 };
 
 //=============== MAIN ================
-Game game;
+MazeGame mazeGame;
 PFont font;
 
 // sound library
@@ -471,13 +472,13 @@ void setup () {
   player = minim.loadFile(music_name);
   win_sound = minim.loadFile(music_win);
 
-  game = new Game ();
+  mazeGame = new MazeGame ();
 }
 
 void draw () {
-  game.Manage();
+  mazeGame.Manage();
 }
 
 void keyPressed() {
-  game.KeyPressed (key);
+  mazeGame.KeyPressed (key);
 }

@@ -1,3 +1,4 @@
+TetrisGame tetrisGame;
 int w = 12;
 int h = 25;
 int sizeOfCube = 30;
@@ -24,7 +25,7 @@ import ddf.minim.*;
 
 Minim minim;
 AudioPlayer player;
-String music_name = "theme_music.mp3";
+String music_tetris = "theme_music.mp3";
 
 // dzdrav: shape texture files
 String[] figureNames = {"figure-one.png"
@@ -46,110 +47,127 @@ void setup() {
   }
   // dzdrav: loading music
   minim = new Minim(this);
-  player = minim.loadFile(music_name);
-}
-
-void initialize() {
-  level = 1;
-  numberOfFullLines = 0;
-  dt = 1000;
-  currentTime = millis();
-  score = new Score();
-  grid = new Grid();
-  pieces = new Pieces();
-  piece = new Piece(-1);
-  nextPiece = new Piece(-1);
+  player = minim.loadFile(music_tetris);
+  
+   tetrisGame = new TetrisGame();
 }
 
 void draw() {
-  background(60);
-
-  if(grid != null) {
-    grid.drawGrid();
-    int timer = millis();
-    if (gameOn) {
-      //promjena vremena ide po sekundama, svaku sekundu se spušta oblik
-      if (timer - currentTime > dt) {
-        currentTime = timer;
-        piece.oneStepDown();
-      }
-    }
-    piece.display(false);
-    score.display();
-    // glazba se ponavlja (loop)
-    if (!player.isPlaying()){
-      player.loop();
-    }
-  }
-  if (gameOver) {
-    noStroke();
-    fill(255, 60);
-    rect(200, 260, 240, 2*txtSize, 3);
-    fill(textColor);
-    text("Game Over", 225, 290);
-
-    // pauziranje glazbe
-    player.pause();
-  }
-  if (!gameOn) {
-    noStroke();
-    fill(255, 60);
-    rect(200, 190, 500, 2*txtSize, 3);
-    fill(textColor);
-    text("press 's' to start playing!", 210, 220);
-  }
-}
-
-void goToNextPiece() {
-  //nextPiece je globalna varijabla, u init je postavljena na random piece
-  piece = new Piece(nextPiece.kind);
-  nextPiece = new Piece(-1);
-  rotation = 0;
-}
-
-void goToNextLevel() {
-  score.addLevelPoints();
-  level = 1 + int(numberOfFullLines / 10);
-  //sa svakim levelom idu kockice još malo brže :)
-  dt *= .8;
+  tetrisGame.Manage();
 }
 
 void keyPressed() {
-  if (key == CODED && gameOn) {
-    switch(keyCode) {
-    case LEFT:
-    case RIGHT:
-    case DOWN:
-    case UP:
-    case SHIFT:
-      piece.inputKey(keyCode);
-      break;
-    }
-  } else if (keyCode == 83) {// "s"
-    if(!gameOn) {
-      initialize();
-      //soundGameStart();
-      gameOver = false;
-      gameOn = true;
-    }
-  } else if (keyCode == 80) {// "p"
-      if(gameOn) {
-        if(looping) {
-        noStroke();
-        fill(255, 60);
-        rect(200, 190, 500, 2*txtSize, 3);
-        fill(textColor);
-        text("press 'p' to resume playing!", 210, 220);
-        player.pause();
-        noLoop();
-        }
-        else {
-          loop();
-          player.loop();
-        }
-      }
-  }
+    tetrisGame.KeyPressed(key);
 }
+
+//======================== GAME ======================================
+
+class TetrisGame {
+  
+ TetrisGame() {
+      //initialize();
+  }
+  
+  void initialize() {
+      level = 1;
+      numberOfFullLines = 0;
+      dt = 1000;
+      currentTime = millis();
+      score = new Score();
+      grid = new Grid();
+      pieces = new Pieces();
+      piece = new Piece(-1);
+      nextPiece = new Piece(-1);
+  }
+  
+  void Manage() {
+       background(60);
+
+      if(grid != null) {
+        grid.drawGrid();
+        int timer = millis();
+          
+        if (gameOn) {
+          //promjena vremena ide po sekundama, svaku sekundu se spušta oblik
+          if (timer - currentTime > dt) {
+            currentTime = timer;
+            piece.oneStepDown();
+          }
+        }
+      piece.display(false);
+      score.display();
+      // glazba se ponavlja (loop)
+      if (!player.isPlaying()){
+        player.loop();
+      }
+    }        
+     if (gameOver) {
+          noStroke();
+          fill(255, 60);
+          rect(200, 260, 240, 2*txtSize, 3);
+          fill(textColor);
+          text("Game Over", 225, 290);
+      
+          // pauziranje glazbe
+          player.pause();
+        }
+              
+        if (!gameOn) {
+          noStroke();
+          fill(255, 60);
+          rect(200, 190, 500, 2*txtSize, 3);
+          fill(textColor);
+          text("press 's' to start playing!", 210, 220);
+        }
+      
+  }
+  
+  void KeyPressed(int key) {
+      if (key == CODED && gameOn) {
+        switch(keyCode) {
+        case LEFT:
+        case RIGHT:
+        case DOWN:
+        case UP:
+        case SHIFT:
+          piece.inputKey(keyCode);
+          break;
+        }
+      } else if (keyCode == 83) {// "s"
+        if(!gameOn) {
+          initialize();
+          gameOver = false;
+          gameOn = true;
+        }
+      } else if (keyCode == 80) {// "p"
+          if(gameOn) {
+            if(looping) {
+            noStroke();
+            fill(255, 60);
+            rect(200, 190, 500, 2*txtSize, 3);
+            fill(textColor);
+            text("press 'p' to resume playing!", 210, 220);
+            player.pause();
+            noLoop();
+            }
+            else {
+              loop();
+              player.loop();
+            }
+          }
+      }    
+      else if (key == 'r') {
+          gameOn = false;
+          gameOver = false;
+          grid = null;
+          player.pause();
+      }
+      
+  }
+  
+}
+
+//================== GRID =================================
 
 class Grid {
   int [][] cells = new int[w][h];
@@ -158,6 +176,20 @@ class Grid {
     for (int i = 0; i < w; i ++)
       for (int j = 0; j < h; j ++)
         cells[i][j] = 0;
+  }
+  
+  void goToNextPiece() {
+    //nextPiece je globalna varijabla, u init je postavljena na random piece
+    piece = new Piece(nextPiece.kind);
+    nextPiece = new Piece(-1);
+    rotation = 0;
+  }
+  
+  void goToNextLevel() {
+    score.addLevelPoints();
+    level = 1 + int(numberOfFullLines / 10);
+    //sa svakim levelom idu kockice još malo brže :)
+    dt *= .8;
   }
 
   int ColorToInt(color c){
@@ -297,6 +329,8 @@ class Grid {
   }
 }
 
+//======================== PIECE =====================
+
 class Piece {
   final color[] colors = {
     color(128, 12, 128), //purple
@@ -325,7 +359,6 @@ class Piece {
   void display(Boolean still) {
     stroke(250);
     fill(c);
-    //texture(texture);
     pushMatrix();
     if (!still) {
       translate(200, 40);
@@ -333,7 +366,6 @@ class Piece {
     }
     int rot = still ? 0 : rotation;
     for (int i = 0; i < 4; i++) {
-      //rect(pos[rot][i][0] * sizeOfCube, pos[rot][i][1] * sizeOfCube, 20, 20);
       image(figures[kind], pos[rot][i][0] * sizeOfCube, pos[rot][i][1] * sizeOfCube, sizeOfCube, sizeOfCube);
     }
     popMatrix();
@@ -397,6 +429,8 @@ class Piece {
     }
   }
 }
+
+//========================= PIECES ================================
 
 class Pieces {
   int[][][][] pos = new int [7][4][4][2];
@@ -593,6 +627,8 @@ class Pieces {
     pos[6][3][3][1] = -1;
   }
 }
+
+//============================ SCORE ======================
 
 class Score {
   int points = 0;
