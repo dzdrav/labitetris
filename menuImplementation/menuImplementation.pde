@@ -93,17 +93,16 @@ void setup(){
   //textSize(txtSize);
   font = createFont("Arial",20,true);  // Loading font
   textFont(font);
-  colorMode(RGB, height, height, height);
   background(white);
   noFill();
   noStroke ();
 }
 
 void draw(){
-  //background(60);
   switch(selectedItem){
     case 0:
       // pokreni tetris
+      textSize(txtSize);
       tetrisGame.Manage();  
       break;
     case 1:
@@ -112,6 +111,7 @@ void draw(){
       break;
     case 2:
       // pokreni labirint
+        colorMode(RGB, height, height, height);
       if (mazeGame.getState() == state_init) {
         mazeGame._maze.show(velicina_kvadrata);
         mazeGame._needToRedraw = true;
