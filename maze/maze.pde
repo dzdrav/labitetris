@@ -81,6 +81,10 @@ class MazeGame {
         else if (keyCode == UP) _maze.goUp();
       }
     }
+    
+    int getState(){
+      return _state;
+    }
 
     void Run() {
       _state = state_run;

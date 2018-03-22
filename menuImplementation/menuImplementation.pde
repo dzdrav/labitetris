@@ -42,7 +42,6 @@ int tekst_pomak = dim_tekst_okvira / 4;
 int sirina = 800;
 int pocetak_teksta_y = (broj_kvadrata_y + 1) * velicina_kvadrata;
 
-// dzdrav: shape texture files
 String[] figureNames = {"figure-one.png"
         ,"figure-two.png"
         ,"figure-three.png"
@@ -91,7 +90,13 @@ void setup(){
           figures[i] = loadImage(figureNames[i]);
         }
   
-  textSize(txtSize);
+  //textSize(txtSize);
+  font = createFont("Arial",20,true);  // Loading font
+  textFont(font);
+  colorMode(RGB, height, height, height);
+  background(white);
+  noFill();
+  noStroke ();
 }
 
 void draw(){
@@ -107,12 +112,19 @@ void draw(){
       break;
     case 2:
       // pokreni labirint
-      font = createFont("Arial",20,true);  // Loading font
-      textFont(font);
-      colorMode(RGB, height, height, height);
-      background(white);
-      noFill();
-      noStroke ();
+      if (mazeGame.getState() == state_init) {
+        mazeGame._maze.show(velicina_kvadrata);
+        mazeGame._needToRedraw = true;
+  
+        mazeGame._startTime = 0;
+        mazeGame._endTime = 0;
+  
+        mazeGame.ClearTextArea();
+  
+        textAlign(CENTER);
+        fill(black);
+        text("Press SPACE to start", sirina / 2, pocetak_teksta_y);
+      }
       mazeGame.Manage();
       break;
     case 3:
@@ -315,7 +327,14 @@ class Menu{
 
 class MazeGame {
   MazeGame () {
-    Reset();
+    //Reset();
+      _state = state_init;
+
+       int p = int (random(1,6));
+       //veći p = lakši labirint (u smislu glađih zidova)
+
+      _maze = new Maze(broj_kvadrata_y, broj_kvadrata_x , p);
+      _maze.compute ();
   }
 
     void Reset () {
@@ -338,6 +357,10 @@ class MazeGame {
       textAlign(CENTER);
       fill(black);
       text("Press SPACE to start", sirina / 2, pocetak_teksta_y);
+    }
+    
+    int getState() {
+      return _state;
     }
 
     void Start() {
