@@ -129,6 +129,19 @@ void draw(){
       break;
     case 3:
       // pravila labirinta
+      background(white);
+      PFont f;
+      f = createFont("Arial",16,true);
+      String pravila= " Labirint je igra u kojoj je cilj doći od početne točke (crvena) do krajnje (zelena). \n "
+        +  " Igrač se po labirintu pomiče pomoću strelica.\n "
+        +  "Gore, dolje, lijevo i desno. \n" 
+       + "Za početak igre pritisnite razmak. \n "
+       + "Za ponovno iscrtavanje pritisnite 'r'. \n"
+       +" Sretno!";
+      textAlign(LEFT);
+      textFont(f,16); 
+      fill(0); 
+      text(pravila, 10, 100);
       println("Gumb 4");
       break;
   default:mainMenu.Display();
@@ -172,6 +185,7 @@ void mouseClicked(){
     case 3:
       // pravila labirinta
       println("Gumb 4");
+      selectedItem=3;
       break;
     // itd...
   }
