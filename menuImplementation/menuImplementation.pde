@@ -4,7 +4,6 @@ TODO
 posttaviti globalni font
 popraviti glazbicu kada se resetira gejm
 --popraviti item outline
-
 */
 // sound library
 import ddf.minim.*;
@@ -30,12 +29,12 @@ int rotation = 0;//rotation status, from 0 to 3
 int level = 1;
 int numberOfFullLines = 0;
 
-
 int txtSize = 25;
 int textColor = color(34, 230, 190);
 
 Boolean gameOver = false;
 Boolean gameOn = false;
+Boolean isSoundOn = true;
 
 
 int state_init = 0;
@@ -65,8 +64,11 @@ MazeGame mazeGame;
 TetrisGame tetrisGame;
 
 PImage menu_background;
+PImage icon_speaker;
+PImage icon_muted;
 int selectedItem=100;
 PFont font;
+Button muteButton;
 
 Minim minim;
 AudioPlayer tetrisPlayer;
@@ -75,31 +77,44 @@ AudioPlayer win_sound;
 String music_name = "theme_music_maze.mp3";
 String music_win = "music_win.mp3";
 String music_tetris = "theme_music.mp3";
+String menu_background_path = "menu_background.jpg";
+String icon_speaker_path = "icon_speaker.png";
+String icon_muted_path = "icon_muted.png";
 
 void setup(){
   size(800, 800, P2D);
   smooth(4);
-  menu_background = loadImage("menu_background.jpg");
+  // images loading
+  icon_speaker = loadImage(icon_speaker_path);
+  icon_muted = loadImage(icon_muted_path);
+  menu_background = loadImage(menu_background_path);
+  for (int i = 0; i < figureNames.length; ++i){
+    figures[i] = loadImage(figureNames[i]);
+  }
   // konstruktor: Menu(int textSize, PImage background)
   mainMenu = new Menu(22, menu_background);
   mainMenu.AddMenuItem("Tetris");
   mainMenu.AddMenuItem("Pravila tetrisa");
   mainMenu.AddMenuItem("Labirint");
   mainMenu.AddMenuItem("Pravila labirinta");
+  muteButton = new Button(width - 2 * mainMenu.GetItemHeight()
+    , height - 2 * mainMenu.GetItemHeight()
+    , mainMenu.GetItemHeight()
+    , mainMenu.GetItemHeight()
+    , icon_speaker
+    , icon_muted
+    );
+  mainMenu.AddButton(muteButton);
 
   tetrisGame = new TetrisGame();
   mazeGame = new MazeGame ();
 
+  // sound loading
   minim = new Minim(this);
   player = minim.loadFile(music_name);
   win_sound = minim.loadFile(music_win);
   tetrisPlayer = minim.loadFile(music_tetris);
 
-  for (int i = 0; i < figureNames.length; ++i){
-          figures[i] = loadImage(figureNames[i]);
-        }
-
-  //textSize(txtSize);
   font = createFont("Arial",20,true);  // Loading font
   textFont(font);
   background(white);
@@ -158,6 +173,7 @@ void draw(){
   }
 }
 
+// TODO dodati povratak u Main menu
 void keyPressed() {
   switch(selectedItem){
     case 0:
@@ -170,7 +186,6 @@ void keyPressed() {
       break;
   }
 }
-
 
 // u ovoj funkciji pokrećemo opcije iz menija
 void mouseClicked(){
@@ -196,6 +211,16 @@ void mouseClicked(){
       println("Gumb 4");
       selectedItem=3;
       break;
+      // mute sound
+    case -5:
+      if (isSoundOn){
+        isSoundOn = false;
+        println("Sound muted");
+      } else {
+        isSoundOn = true;
+        println("Sound ON");
+      }
+      break;
     // itd...
   }
 }
@@ -208,6 +233,7 @@ void mouseClicked(){
 class Menu{
   // lista itema (string)
   private ArrayList<String> m_items = new ArrayList<String>();
+  private ArrayList<Button> m_buttons = new ArrayList<Button>();
   // lista koja sadrži središta svih itema (za njihovo crtanje na ekran)
   // menu itemi se crtaju na temelju lokacije središta, širine i visine
   private IntList m_centers;
@@ -255,8 +281,12 @@ class Menu{
     }
   }
 
+  public void AddButton(Button button){
+    m_buttons.add(button);
+  }
+
   // menu item get/set
-  void AddMenuItem(String item){
+  public void AddMenuItem(String item){
     m_items.add(item);
     UpdateCenters();
     // ažuriranje širine menu itema
@@ -266,7 +296,7 @@ class Menu{
       m_itemWidth = int(textWidth(item) + 4 * textWidth('c'));
     }
   }
-  String GetMenuItem(int i){
+  public String GetMenuItem(int i){
     return m_items.get(i);
   }
 
@@ -289,11 +319,16 @@ class Menu{
   }
 
   // vraća indeks kliknutog itema ili -1 ako nijedan nije kliknut
+  //BUG oprez: ovo je hardkodirano za samo jedan gumb na 0-om indeksu
+  // ovdje dodati podršku za registriranje klika na nove gumbove
   public int SelectedItem(){
     for (int i = 0; i < m_items.size(); ++i){
       if (MouseOverItem(i))
         return i;
     }
+    // dodajemo specifičan kod: -5 za klik na Mute gumb
+    if (m_buttons.get(0).MouseOverItem())
+      return -5;
     return -1;
   }
 
@@ -307,6 +342,11 @@ class Menu{
       return true;
     else
       return false;
+  }
+
+  // item height getter
+  public int GetItemHeight(){
+    return m_itemHeight;
   }
 
   // color get/set
@@ -346,6 +386,78 @@ class Menu{
       else
         DrawMenuItem(i, m_itemColor, m_textColor);
     }
+    // sound icon
+    // BUG pripaziti ako odlučimo dodati više gumbova da se prikažu ovdje
+    Boolean selected = false;
+    if (m_buttons.get(0).MouseOverItem())
+      selected = true;
+    // Display(boolean accent, boolean state)
+    m_buttons.get(0).Display(selected, isSoundOn);
+  }
+}
+
+/* Button može imati dva stanja, svako predstavljeno jednom ikonicom
+ * stanje se mijenja klikom na gumb
+ * TODO lako se implementira mogućnost promjene boja i oblika gumba
+ */
+class Button{
+  private int m_width;
+  private int m_height;
+  private int m_x;
+  private int m_y;
+  private float m_alpha;
+  private color m_color;
+  private color m_accent_color;
+  private PImage m_true_icon;
+  private PImage m_false_icon;
+  private Boolean m_state;
+
+  // konstruktor
+  Button(int x, int y, int p_width, int p_height, PImage p_true, PImage p_false){
+    m_x = x;
+    m_y = y;
+    m_width = p_width;
+    m_height = p_height;
+    m_alpha = 0.25;
+    m_color = #E8E288;
+    m_accent_color = #1FE3F4;
+    m_true_icon = p_true;
+    m_false_icon = p_false;
+    m_state = true;
+  }
+
+  // prikaže gumb u trenutnom stanju
+  public void Display(Boolean accent, Boolean state){
+    ellipseMode(CENTER);
+    stroke(black);
+    //tint(255,126);
+    int alpha = int(m_alpha * 256);
+    if (accent){
+      fill(m_accent_color, alpha);
+    } else {
+      fill(m_color, alpha);
+    }
+    ellipse(m_x, m_y, m_width, m_height);
+
+    imageMode(CENTER);
+    if (state){
+      image(m_true_icon, m_x, m_y, m_width, m_height);
+    } else {
+      image(m_false_icon, m_x, m_y, m_width, m_height);
+    }
+    // vraćamo na default vrijednost
+    imageMode(CORNER);
+  }
+
+  public boolean MouseOverItem(){
+    if(mouseX < (m_x + m_width / 2) &&
+      mouseX > (m_x - m_width / 2) &&
+      mouseY < (m_y + m_height / 2) &&
+      mouseY > (m_y - m_height / 2)
+        )
+      return true;
+    else
+      return false;
   }
 }
 
@@ -393,7 +505,9 @@ class MazeGame {
 
        // glazba se ponavlja (loop)
        if (!player.isPlaying()){
-         player.loop();
+         if (isSoundOn){
+           player.loop();
+         }
        }
        return;
      }
@@ -438,7 +552,9 @@ class MazeGame {
       player.pause();
       player.rewind();
       // pobjednička glazba
-      win_sound.play();
+      if (isSoundOn){
+        win_sound.play();
+      }
     }
 
     void ClearTextArea () {
@@ -807,7 +923,9 @@ class TetrisGame {
     score.display();
     // glazba se ponavlja (loop)
     if (!tetrisPlayer.isPlaying()){
-      tetrisPlayer.loop();
+      if (isSoundOn){
+        tetrisPlayer.loop();
+      }
     }
   }
     if (gameOver) {
@@ -828,7 +946,7 @@ class TetrisGame {
         textAlign(LEFT);
         textSize(txtSize / 2);
         fill(textColor);
-        text("press 's' to start playing!", 210, 220);
+        text("Press 's' to start playing!", 210, 220);
       }
   }
 
@@ -862,7 +980,9 @@ class TetrisGame {
             }
             else {
               loop();
-              tetrisPlayer.loop();
+              if (isSoundOn){
+                tetrisPlayer.loop();
+              }
             }
           }
       }
