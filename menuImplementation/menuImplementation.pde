@@ -97,8 +97,8 @@ void setup(){
   mainMenu.AddMenuItem("Pravila tetrisa");
   mainMenu.AddMenuItem("Labirint");
   mainMenu.AddMenuItem("Pravila labirinta");
-  muteButton = new Button(width - 2 * mainMenu.GetItemHeight()
-    , height - 2 * mainMenu.GetItemHeight()
+  muteButton = new Button(width - 1 * mainMenu.GetItemHeight()
+    , height - 1 * mainMenu.GetItemHeight()
     , mainMenu.GetItemHeight()
     , mainMenu.GetItemHeight()
     , icon_speaker
@@ -148,6 +148,7 @@ void draw(){
         textAlign(CENTER);
         fill(black);
         text("Press SPACE to start", sirina / 2, pocetak_teksta_y);
+        textAlign(LEFT);
       }
       mazeGame.Manage();
       break;
@@ -406,7 +407,8 @@ class Button{
   private int m_x;
   private int m_y;
   private float m_alpha;
-  private color m_color;
+  private color m_true_color;
+  private color m_false_color;
   private color m_accent_color;
   private PImage m_true_icon;
   private PImage m_false_icon;
@@ -418,9 +420,11 @@ class Button{
     m_y = y;
     m_width = p_width;
     m_height = p_height;
-    m_alpha = 0.25;
-    m_color = #E8E288;
-    m_accent_color = #1FE3F4;
+    m_alpha = 0.75;
+    //m_color = #E8E288;
+    m_true_color = color(0,237,0);
+    m_false_color = #E8E288;
+    m_accent_color = #FF00FF;
     m_true_icon = p_true;
     m_false_icon = p_false;
     m_state = true;
@@ -431,11 +435,15 @@ class Button{
     ellipseMode(CENTER);
     stroke(black);
     //tint(255,126);
-    int alpha = int(m_alpha * 256);
+    int alpha = int(m_alpha * 255);
     if (accent){
       fill(m_accent_color, alpha);
     } else {
-      fill(m_color, alpha);
+      if (state){
+        fill(m_true_color, alpha);
+      } else {
+        fill(m_false_color, alpha);
+      }
     }
     ellipse(m_x, m_y, m_width, m_height);
 
@@ -974,6 +982,8 @@ class TetrisGame {
             fill(255, 60);
             rect(200, 190, 500, 2*txtSize, 3);
             fill(textColor);
+            textSize(16);
+            textAlign(LEFT);
             text("press 'p' to resume playing!", 210, 220);
             tetrisPlayer.pause();
             noLoop();
@@ -992,9 +1002,7 @@ class TetrisGame {
           grid = null;
           tetrisPlayer.rewind();
       }
-
   }
-
 }
 
 //================== GRID =================================
