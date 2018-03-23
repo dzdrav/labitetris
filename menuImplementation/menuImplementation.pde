@@ -1,3 +1,11 @@
+/*
+TODO
+--popraviti slova na tetrisu
+posttaviti globalni font
+popraviti glazbicu kada se resetira gejm
+--popraviti item outline
+
+*/
 // sound library
 import ddf.minim.*;
 
@@ -70,6 +78,7 @@ String music_tetris = "theme_music.mp3";
 
 void setup(){
   size(800, 800, P2D);
+  smooth(4);
   menu_background = loadImage("menu_background.jpg");
   // konstruktor: Menu(int textSize, PImage background)
   mainMenu = new Menu(22, menu_background);
@@ -77,19 +86,19 @@ void setup(){
   mainMenu.AddMenuItem("Pravila tetrisa");
   mainMenu.AddMenuItem("Labirint");
   mainMenu.AddMenuItem("Pravila labirinta");
-  
+
   tetrisGame = new TetrisGame();
   mazeGame = new MazeGame ();
-  
+
   minim = new Minim(this);
   player = minim.loadFile(music_name);
   win_sound = minim.loadFile(music_win);
   tetrisPlayer = minim.loadFile(music_tetris);
-  
+
   for (int i = 0; i < figureNames.length; ++i){
           figures[i] = loadImage(figureNames[i]);
         }
-  
+
   //textSize(txtSize);
   font = createFont("Arial",20,true);  // Loading font
   textFont(font);
@@ -103,7 +112,7 @@ void draw(){
     case 0:
       // pokreni tetris
       textSize(txtSize);
-      tetrisGame.Manage();  
+      tetrisGame.Manage();
       break;
     case 1:
       // pravila tetrisa
@@ -115,12 +124,12 @@ void draw(){
       if (mazeGame.getState() == state_init) {
         mazeGame._maze.show(velicina_kvadrata);
         mazeGame._needToRedraw = true;
-  
+
         mazeGame._startTime = 0;
         mazeGame._endTime = 0;
-  
+
         mazeGame.ClearTextArea();
-  
+
         textAlign(CENTER);
         fill(black);
         text("Press SPACE to start", sirina / 2, pocetak_teksta_y);
@@ -134,13 +143,13 @@ void draw(){
       f = createFont("Arial",16,true);
       String pravila= " Labirint je igra u kojoj je cilj doći od početne točke (crvena) do krajnje (zelena). \n "
         +  " Igrač se po labirintu pomiče pomoću strelica.\n "
-        +  "Gore, dolje, lijevo i desno. \n" 
-       + "Za početak igre pritisnite razmak. \n "
-       + "Za ponovno iscrtavanje pritisnite 'r'. \n"
-       +" Sretno!";
+        +  "Gore, dolje, lijevo i desno. \n"
+        + "Za početak igre pritisnite razmak. \n "
+        + "Za ponovno iscrtavanje pritisnite 'r'. \n"
+        +" Sretno!";
       textAlign(LEFT);
-      textFont(f,16); 
-      fill(0); 
+      textFont(f,16);
+      fill(0);
       text(pravila, 10, 100);
       println("Gumb 4");
       break;
@@ -254,7 +263,7 @@ class Menu{
     textFont(m_menuFont);
     textSize(m_textSize);
     if (textWidth(item) > m_itemWidth){
-      m_itemWidth = int(textWidth(item) + 4 * textWidth('c')); 
+      m_itemWidth = int(textWidth(item) + 4 * textWidth('c'));
     }
   }
   String GetMenuItem(int i){
@@ -265,6 +274,7 @@ class Menu{
   void DrawMenuItem(int i, color bgColor, color textColor){
     if (i <= m_items.size()){
       rectMode(CENTER);
+      stroke(black);
       textAlign(CENTER, CENTER);
       textFont(m_menuFont);
       textSize(m_textSize);
@@ -372,7 +382,7 @@ class MazeGame {
       fill(black);
       text("Press SPACE to start", sirina / 2, pocetak_teksta_y);
     }
-    
+
     int getState() {
       return _state;
     }
@@ -762,66 +772,66 @@ int [][] dirset = {
 //==============================================================
 
 class TetrisGame {
-  
+
  TetrisGame() {
       //initialize();
   }
-  
-  void initialize() {
-      level = 1;
-      numberOfFullLines = 0;
-      dt = 1000;
-      currentTime = millis();
-      score = new Score();
-      grid = new Grid();
-      pieces = new Pieces();
-      piece = new Piece(-1);
-      nextPiece = new Piece(-1);
-  }
-  
-  void Manage() {
-       background(60);
 
-      if(grid != null) {
-        grid.drawGrid();
-        int timer = millis();
-          
-        if (gameOn) {
-          //promjena vremena ide po sekundama, svaku sekundu se spušta oblik
-          if (timer - currentTime > dt) {
-            currentTime = timer;
-            piece.oneStepDown();
-          }
-        }
-      piece.display(false);
-      score.display();
-      // glazba se ponavlja (loop)
-      if (!tetrisPlayer.isPlaying()){
-        tetrisPlayer.loop();
-      }
-    }        
-     if (gameOver) {
-          noStroke();
-          fill(255, 60);
-          rect(200, 260, 240, 2*txtSize, 3);
-          fill(textColor);
-          text("Game Over", 225, 290);
-      
-          // pauziranje glazbe
-          tetrisPlayer.pause();
-          tetrisPlayer.rewind();
-        }
-              
-        if (!gameOn) {
-          noStroke();
-          fill(255, 60);
-          rect(200, 190, 500, 2*txtSize, 3);
-          fill(textColor);
-          text("press 's' to start playing!", 210, 220);
-        }
-      
+  void initialize() {
+    level = 1;
+    numberOfFullLines = 0;
+    dt = 1000;
+    currentTime = millis();
+    score = new Score();
+    grid = new Grid();
+    pieces = new Pieces();
+    piece = new Piece(-1);
+    nextPiece = new Piece(-1);
   }
-  
+
+  void Manage() {
+    background(60);
+    textAlign(LEFT);
+    if(grid != null) {
+      grid.drawGrid();
+      int timer = millis();
+
+      if (gameOn) {
+        //promjena vremena ide po sekundama, svaku sekundu se spušta oblik
+        if (timer - currentTime > dt) {
+          currentTime = timer;
+          piece.oneStepDown();
+        }
+      }
+    piece.display(false);
+    score.display();
+    // glazba se ponavlja (loop)
+    if (!tetrisPlayer.isPlaying()){
+      tetrisPlayer.loop();
+    }
+  }
+    if (gameOver) {
+        noStroke();
+        fill(255, 60);
+        rect(200, 260, 240, 2*txtSize, 3);
+        fill(textColor);
+        text("Game Over", 225, 290);
+
+        // pauziranje glazbe
+        tetrisPlayer.pause();
+        tetrisPlayer.rewind();
+      }
+      if (!gameOn) {
+        noStroke();
+        fill(255, 60);
+        rect(200, 190, 500, 2*txtSize, 3);
+        textAlign(LEFT);
+        textSize(txtSize / 2);
+        fill(textColor);
+        text("press 's' to start playing!", 210, 220);
+      }
+  }
+
   void KeyPressed(int key) {
       if (key == CODED && gameOn) {
         switch(keyCode) {
@@ -855,16 +865,16 @@ class TetrisGame {
               tetrisPlayer.loop();
             }
           }
-      }    
+      }
       else if (key == 'r') {
           gameOn = false;
           gameOver = false;
           grid = null;
           tetrisPlayer.rewind();
       }
-      
+
   }
-  
+
 }
 
 //================== GRID =================================
@@ -877,14 +887,14 @@ class Grid {
       for (int j = 0; j < h; j ++)
         cells[i][j] = 0;
   }
-  
+
   void goToNextPiece() {
     //nextPiece je globalna varijabla, u init je postavljena na random piece
     piece = new Piece(nextPiece.kind);
     nextPiece = new Piece(-1);
     rotation = 0;
   }
-  
+
   void goToNextLevel() {
     score.addLevelPoints();
     level = 1 + int(numberOfFullLines / 10);
@@ -1356,6 +1366,7 @@ class Score {
     pushMatrix();
     translate(40, 60);
 
+    textAlign(LEFT);
     //score
     fill(textColor);
     text("score: ", 0, 0);
