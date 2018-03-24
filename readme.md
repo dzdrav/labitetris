@@ -11,7 +11,7 @@ Ana Vidović
 Dinko Ždravac
 
 ### About
-A simple game of arranging falling blocks (similar to **Tetris (R)** and finding your way through a maze (**Labyrinth**).
+A simple game of arranging falling blocks (similar to **Tetris™** and finding your way through a maze (**Labyrinth**).
 
 
 This game was initially created as an University class project on [PMF-MO, Zagreb](https://www.math.pmf.unizg.hr/), Croatia (2017/2018).

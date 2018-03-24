@@ -135,7 +135,7 @@ void draw(){
       break;
     case 2:
       // pokreni labirint
-        colorMode(RGB, height, height, height);
+      colorMode(RGB, height, height, height);
       if (mazeGame.getState() == state_init) {
         mazeGame._maze.show(velicina_kvadrata);
         mazeGame._needToRedraw = true;
@@ -169,8 +169,12 @@ void draw(){
       text(pravila, 10, 100);
       println("Gumb 4");
       break;
-  default:mainMenu.Display();
-      break;
+      case -2:
+        mainMenu.Display();
+        break;
+      default:
+        mainMenu.Display();
+        break;
   }
 }
 
@@ -183,7 +187,10 @@ void keyPressed() {
       break;
     case 2:
       // igraj labirint
-      mazeGame.KeyPressed (key);
+      mazeGame.KeyPressed(key);
+      break;
+    case -2:
+      // vrati se u Main menu
       break;
   }
 }
@@ -433,8 +440,6 @@ class Button{
   // prikaže gumb u trenutnom stanju
   public void Display(Boolean accent, Boolean state){
     ellipseMode(CENTER);
-    stroke(black);
-    //tint(255,126);
     int alpha = int(m_alpha * 255);
     if (accent){
       fill(m_accent_color, alpha);
@@ -445,6 +450,7 @@ class Button{
         fill(m_false_color, alpha);
       }
     }
+    stroke(black);
     ellipse(m_x, m_y, m_width, m_height);
 
     imageMode(CENTER);
@@ -573,7 +579,12 @@ class MazeGame {
     void KeyPressed (int k) {
       if (k == 'r') Reset(); // Resetting game
       if (k == ' ') Start(); // Start
-
+      if (k == BACKSPACE){
+        this.Reset();
+        player.pause();
+        player.rewind();
+        selectedItem = -2;
+      }
       Move ();
     }
 
@@ -643,10 +654,8 @@ class Maze {
   }
 
 
-void show (int velicina_kvadrata) {
-
+  void show (int velicina_kvadrata) {
   _d = velicina_kvadrata;
-
   // Maze
   for (int j = 0; j < _h; ++j) {
     for (int k = 0; k < _w; ++k) {
@@ -698,7 +707,7 @@ void show (int velicina_kvadrata) {
     if (_m[y-1][x] == PAS) return false;
     if (_m[y+1][x] == PAS) return false;
     return true;
-}
+  }
 
   boolean TestS (int x, int y) {
     if (_m[y][x] != WALL) return false;
@@ -811,16 +820,16 @@ void show (int velicina_kvadrata) {
      }
   }
 
-       void goRight () {
-         if (_m[_my][_mx+1]==PAS) {
-            _step++;
-           fill(0xFF, 0xFF, 0xFF);
-           rect(_mx*_d, _my*_d, _d, _d);
-           _mx++;
-           fill(blue);
-           rect(_mx*_d, _my*_d, _d, _d);
-         }
-      }
+  void goRight () {
+    if (_m[_my][_mx+1]==PAS) {
+      _step++;
+      fill(0xFF, 0xFF, 0xFF);
+      rect(_mx*_d, _my*_d, _d, _d);
+      _mx++;
+      fill(blue);
+      rect(_mx*_d, _my*_d, _d, _d);
+    }
+  }
 
   void goUp () {
      if (_m[_my-1][_mx]==PAS) {
@@ -833,16 +842,16 @@ void show (int velicina_kvadrata) {
      }
   }
 
-       void goDown () {
-         if (_m[_my+1][_mx]==PAS) {
-            _step++;
-           fill(0xFF, 0xFF, 0xFF);
-           rect(_mx*_d, _my*_d, _d, _d);
-           _my++;
-           fill(blue);
-           rect(_mx*_d, _my*_d, _d, _d);
-         }
-      }
+   void goDown () {
+     if (_m[_my+1][_mx]==PAS) {
+        _step++;
+       fill(0xFF, 0xFF, 0xFF);
+       rect(_mx*_d, _my*_d, _d, _d);
+       _my++;
+       fill(blue);
+       rect(_mx*_d, _my*_d, _d, _d);
+     }
+  }
 
   int [][]_m;
   int _h, _w; // H & W
@@ -959,6 +968,12 @@ class TetrisGame {
   }
 
   void KeyPressed(int key) {
+      if (key == BACKSPACE){
+        tetrisPlayer.pause();
+        tetrisPlayer.rewind();
+        gameOn = false;
+        selectedItem = -2;
+      }
       if (key == CODED && gameOn) {
         switch(keyCode) {
         case LEFT:
@@ -984,7 +999,7 @@ class TetrisGame {
             fill(textColor);
             textSize(16);
             textAlign(LEFT);
-            text("press 'p' to resume playing!", 210, 220);
+            text("Press 'p' to resume playing!", 210, 220);
             tetrisPlayer.pause();
             noLoop();
             }
