@@ -123,6 +123,9 @@ void setup(){
 }
 
 void draw(){
+  PFont f;
+  f = createFont("Arial",16,true);
+  String pravila;
   switch(selectedItem){
     case 0:
       // pokreni tetris
@@ -131,6 +134,21 @@ void draw(){
       break;
     case 1:
       // pravila tetrisa
+       background(white);
+       pravila= "Dijelovi koji se sastoje od četiri kvadratića padaju s vrha polja.\n"
+                 + "Igrač ih može rotirati i slagati na način da između dijelova ne ostaje prazan prostor.\n"
+                 + "Rotacija se obavlja strelicom prema gore, a pomicanje ulijevo ili udesno strelicom ulijevo odnosno udesno.\n"
+                 + "Padanje dijelova može se ubrzati pritiskom na strelicu prema dolje ili pritiskom na tipku 'shift'.\n"
+                 + "Cilj igre je popuniti cijelo polje za igru bez mogućnosti da se pojavi novi dio.\n"
+                 + "Za početak igre pritisnite 's'.\n"
+                 + "Za ponovno iscrtavanje pritisnite 'r'.\n"
+                 + "Za pauziranje igre pritisnite 'p'.\n"
+                 + "Za povratak u glavni izbornik pritisnite 'backspace'.\n"
+                 + "Sretno!";
+      textAlign(LEFT);
+      textFont(f,16);
+      fill(0);
+      text(pravila, 10, 100);
       println("Gumb 2");
       break;
     case 2:
@@ -155,14 +173,14 @@ void draw(){
     case 3:
       // pravila labirinta
       background(white);
-      PFont f;
       f = createFont("Arial",16,true);
-      String pravila= " Labirint je igra u kojoj je cilj doći od početne točke (crvena) do krajnje (zelena). \n "
-        +  " Igrač se po labirintu pomiče pomoću strelica.\n "
-        +  "Gore, dolje, lijevo i desno. \n"
-        + "Za početak igre pritisnite razmak. \n "
-        + "Za ponovno iscrtavanje pritisnite 'r'. \n"
-        +" Sretno!";
+      pravila= "Labirint je igra u kojoj je cilj doći od početne točke (crvena) do krajnje (zelena). \n "
+                +  "Igrač se po labirintu pomiče pomoću strelica.\n "
+                +  "Gore, dolje, lijevo i desno. \n"
+                + "Za početak igre pritisnite razmak. \n "
+                + "Za ponovno iscrtavanje pritisnite 'r'. \n"
+                + "Za povratak u glavni izbornik iz igrice pritisnite 'backspace'. \n"
+                + "Sretno!";
       textAlign(LEFT);
       textFont(f,16);
       fill(0);
@@ -208,6 +226,7 @@ void mouseClicked(){
     case 1:
       // pravila tetrisa
       println("Gumb 2");
+       selectedItem=1;
       break;
     case 2:
       // pokreni labirint
