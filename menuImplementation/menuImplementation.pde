@@ -179,7 +179,7 @@ void draw(){
                 +  "Gore, dolje, lijevo i desno. \n"
                 + "Za početak igre pritisnite razmak. \n "
                 + "Za ponovno iscrtavanje pritisnite 'r'. \n"
-                + "Za povratak u glavni izbornik iz igrice pritisnite 'backspace'. \n"
+                + "Za povratak u glavni izbornik iz pritisnite 'backspace'. \n"
                 + "Sretno!";
       textAlign(LEFT);
       textFont(f,16);
@@ -198,6 +198,11 @@ void draw(){
 
 // TODO dodati povratak u Main menu
 void keyPressed() {
+  
+  if (key == BACKSPACE){
+        selectedItem = -2;
+      }
+      
   switch(selectedItem){
     case 0:
       // igraj tetris
@@ -209,8 +214,10 @@ void keyPressed() {
       break;
     case -2:
       // vrati se u Main menu
+      mainMenu.Display();
       break;
   }
+ 
 }
 
 // u ovoj funkciji pokrećemo opcije iz menija
