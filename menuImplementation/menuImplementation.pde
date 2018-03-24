@@ -4,6 +4,7 @@ TODO
 posttaviti globalni font
 popraviti glazbicu kada se resetira gejm
 --popraviti item outline
+--napravit pause za maze
 */
 // sound library
 import ddf.minim.*;
