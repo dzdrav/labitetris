@@ -125,8 +125,9 @@ void setup(){
 
 void draw(){
   PFont f;
-  f = createFont("Arial",16,true);
+  f = createFont("Arial",18,true);
   String pravila;
+  String naslov;
   switch(selectedItem){
     case 0:
       // pokreni tetris
@@ -135,11 +136,12 @@ void draw(){
       break;
     case 1:
       // pravila tetrisa
-       background(white);
-       pravila= "Dijelovi koji se sastoje od četiri kvadratića padaju s vrha polja.\n"
+       background(#00BFA5);
+       naslov = "Pravila tetrisa: ";
+       pravila = "Dijelovi koji se sastoje od četiri kvadratića padaju s vrha polja.\n"
                  + "Igrač ih može rotirati i slagati na način da između dijelova ne ostaje prazan prostor.\n"
-                 + "Rotacija se obavlja strelicom prema gore, a pomicanje ulijevo ili udesno strelicom ulijevo odnosno udesno.\n"
-                 + "Padanje dijelova može se ubrzati pritiskom na strelicu prema dolje ili pritiskom na tipku 'shift'.\n"
+                 + "Rotacija se obavlja strelicom prema gore, a pomicanje ulijevo ili udesno \n strelicom ulijevo odnosno udesno.\n"
+                 + "Padanje dijelova može se ubrzati pritiskom na strelicu prema dolje \n ili pritiskom na tipku 'shift'.\n"
                  + "Cilj igre je popuniti cijelo polje za igru bez mogućnosti da se pojavi novi dio.\n"
                  + "Za početak igre pritisnite 's'.\n"
                  + "Za ponovno iscrtavanje pritisnite 'r'.\n"
@@ -147,9 +149,12 @@ void draw(){
                  + "Za povratak u glavni izbornik pritisnite 'backspace'.\n"
                  + "Sretno!";
       textAlign(LEFT);
-      textFont(f,16);
+      textFont(f,30);
       fill(0);
-      text(pravila, 10, 100);
+      text(naslov, 30, 70);
+      textFont(f,20);
+      fill(0);
+      text(pravila, 30, 110);
       println("Gumb 2");
       break;
     case 2:
@@ -173,8 +178,9 @@ void draw(){
       break;
     case 3:
       // pravila labirinta
-      background(white);
-      f = createFont("Arial",16,true);
+      background(#00BFA5);
+      f = createFont("Arial",18,true);
+       naslov = "Pravila labirinta: ";
       pravila= "Labirint je igra u kojoj je cilj doći od početne točke (crvena) do krajnje (zelena). \n "
                 +  "Igrač se po labirintu pomiče pomoću strelica.\n "
                 +  "Gore, dolje, lijevo i desno. \n"
@@ -183,9 +189,12 @@ void draw(){
                 + "Za povratak u glavni izbornik iz pritisnite 'backspace'. \n"
                 + "Sretno!";
       textAlign(LEFT);
-      textFont(f,16);
+       textFont(f,30);
       fill(0);
-      text(pravila, 10, 100);
+      text(naslov, 30, 70);
+      textFont(f,20);
+      fill(0);
+      text(pravila, 30, 110);
       println("Gumb 4");
       break;
       case -2:
