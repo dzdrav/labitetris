@@ -125,7 +125,7 @@ void setup(){
 
 void draw(){
   PFont f;
-  f = createFont("Arial",18,true);
+  f = createFont("Calibri", 20, true);
   String pravila;
   String naslov;
   switch(selectedItem){
@@ -139,7 +139,7 @@ void draw(){
        background(#00BFA5);
        naslov = "Pravila tetrisa: ";
        pravila = "Dijelovi koji se sastoje od četiri kvadratića padaju s vrha polja.\n"
-                 + "Igrač ih može rotirati i slagati na način da između dijelova ne ostaje prazan prostor.\n"
+                 + "Igrač ih može rotirati i slagati na način da između dijelova \n ne ostaje prazan prostor.\n"
                  + "Rotacija se obavlja strelicom prema gore, a pomicanje ulijevo ili udesno \n strelicom ulijevo odnosno udesno.\n"
                  + "Padanje dijelova može se ubrzati pritiskom na strelicu prema dolje \n ili pritiskom na tipku 'shift'.\n"
                  + "Cilj igre je popuniti cijelo polje za igru bez mogućnosti da se pojavi novi dio.\n"
@@ -149,12 +149,12 @@ void draw(){
                  + "Za povratak u glavni izbornik pritisnite 'backspace'.\n"
                  + "Sretno!";
       textAlign(LEFT);
-      textFont(f,30);
+      textFont(f, 40);
       fill(0);
       text(naslov, 30, 70);
-      textFont(f,20);
+      textFont(f, 25);
       fill(0);
-      text(pravila, 30, 110);
+      text(pravila, 30, 120);
       println("Gumb 2");
       break;
     case 2:
@@ -179,9 +179,8 @@ void draw(){
     case 3:
       // pravila labirinta
       background(#00BFA5);
-      f = createFont("Arial",18,true);
-       naslov = "Pravila labirinta: ";
-      pravila= "Labirint je igra u kojoj je cilj doći od početne točke (crvena) do krajnje (zelena). \n "
+      naslov = "Pravila labirinta: ";
+      pravila= "Labirint je igra u kojoj je cilj doći od početne točke (crvena) \n do krajnje (zelena). \n "
                 +  "Igrač se po labirintu pomiče pomoću strelica.\n "
                 +  "Gore, dolje, lijevo i desno. \n"
                 + "Za početak igre pritisnite razmak. \n "
@@ -189,12 +188,12 @@ void draw(){
                 + "Za povratak u glavni izbornik iz pritisnite 'backspace'. \n"
                 + "Sretno!";
       textAlign(LEFT);
-       textFont(f,30);
+       textFont(f, 40);
       fill(0);
       text(naslov, 30, 70);
-      textFont(f,20);
+      textFont(f, 30);
       fill(0);
-      text(pravila, 30, 110);
+      text(pravila, 25, 120);
       println("Gumb 4");
       break;
       case -2:
