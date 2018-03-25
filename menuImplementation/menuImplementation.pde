@@ -148,7 +148,7 @@ void draw(){
                  + "Igrač ih može rotirati i slagati na način da između dijelova \n ne ostaje prazan prostor.\n"
                  + "Rotacija se obavlja strelicom prema gore, a pomicanje ulijevo ili udesno \n strelicom ulijevo odnosno udesno.\n"
                  + "Padanje dijelova može se ubrzati pritiskom na strelicu prema dolje \n ili pritiskom na tipku 'shift'.\n"
-                 + "Cilj igre je popuniti cijelo polje za igru bez mogućnosti da se pojavi novi dio.\n"
+                 + "Cilj igre je ne dozvoliti da se popuni cijelo polje za igru\n bez mogućnosti da se pojavi novi dio.\n"
                  + "Za početak igre pritisnite 's'.\n"
                  + "Za ponovno iscrtavanje pritisnite 'r'.\n"
                  + "Za pauziranje igre pritisnite 'p'.\n"
@@ -620,7 +620,7 @@ class MazeGame {
       mazePlayer.pause();
       mazePlayer.rewind();
       selectedItem = -1;
-    }
+    } 
     Move();
   }
 
@@ -1005,11 +1005,11 @@ class TetrisGame {
 
   void KeyPressed(int k) {
       if (k == BACKSPACE){ //<>//
+        tetrisPlayer.pause();
+        tetrisPlayer.rewind();
         if (!looping) {
           loop();
         }
-        tetrisPlayer.pause();
-        tetrisPlayer.rewind();
         selectedItem = -1; //<>//
         gameOn = false; //<>//
         gameOver = false;
