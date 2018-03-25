@@ -73,9 +73,9 @@ Button muteButton;
 
 Minim minim;
 AudioPlayer tetrisPlayer;
-AudioPlayer player;
+AudioPlayer mazePlayer;
 AudioPlayer win_sound;
-String music_name = "theme_music_maze.mp3";
+String music_maze = "theme_music_maze.mp3";
 String music_win = "music_win.mp3";
 String music_tetris = "theme_music.mp3";
 String menu_background_path = "menu_background.jpg";
@@ -94,10 +94,12 @@ void setup(){
   }
   // konstruktor: Menu(int textSize, PImage background)
   mainMenu = new Menu(22, menu_background);
+  // dodavanje Menu itema
   mainMenu.AddMenuItem("Tetris");
   mainMenu.AddMenuItem("Pravila tetrisa");
   mainMenu.AddMenuItem("Labirint");
   mainMenu.AddMenuItem("Pravila labirinta");
+  // dodavanje Sound gumba
   muteButton = new Button(width - 1 * mainMenu.GetItemHeight()
     , height - 1 * mainMenu.GetItemHeight()
     , mainMenu.GetItemHeight()
@@ -112,7 +114,7 @@ void setup(){
 
   // sound loading
   minim = new Minim(this);
-  player = minim.loadFile(music_name);
+  mazePlayer = minim.loadFile(music_maze);
   win_sound = minim.loadFile(music_win);
   tetrisPlayer = minim.loadFile(music_tetris);
 
@@ -155,7 +157,6 @@ void draw(){
       textFont(f, 25);
       fill(0);
       text(pravila, 30, 120);
-      println("Gumb 2");
       break;
     case 2:
       // pokreni labirint
@@ -188,45 +189,40 @@ void draw(){
                 + "Za povratak u glavni izbornik iz pritisnite 'backspace'. \n"
                 + "Sretno!";
       textAlign(LEFT);
-       textFont(f, 40);
+      textFont(f, 40);
       fill(0);
       text(naslov, 30, 70);
       textFont(f, 30);
       fill(0);
       text(pravila, 25, 120);
-      println("Gumb 4");
       break;
-      case -2:
-        mainMenu.Display();
-        break;
-      default:
-        mainMenu.Display();
-        break;
+    case -1:
+    default:
+      mainMenu.Display();
+      break;
   }
 }
 
-// TODO dodati povratak u Main menu
 void keyPressed() {
-  
-  if (key == BACKSPACE){
-        selectedItem = -2;
-      }
-      
   switch(selectedItem){
+    // tumači pritisnutu tipku unutar Tetrisa
     case 0:
-      // igraj tetris
       tetrisGame.KeyPressed(key);
       break;
+    // tumači pritisnutu tipku unutar Mazea
     case 2:
-      // igraj labirint
       mazeGame.KeyPressed(key);
       break;
-    case -2:
+    // ako smo u pcijama 1/3 (pravila)
+    case 1:
+    case 3:
+    default:
+      // -1 je kod za povratak u main menu
+      selectedItem = -1;
       // vrati se u Main menu
       mainMenu.Display();
       break;
   }
- 
 }
 
 // u ovoj funkciji pokrećemo opcije iz menija
@@ -237,12 +233,13 @@ void mouseClicked(){
     case 0:
       // pokreni tetris
       println("Gumb 1");
+      // tetrisGame.Manage();
       selectedItem=0;
       break;
     case 1:
       // pravila tetrisa
       println("Gumb 2");
-       selectedItem=1;
+      selectedItem=1;
       break;
     case 2:
       // pokreni labirint
@@ -254,7 +251,7 @@ void mouseClicked(){
       println("Gumb 4");
       selectedItem=3;
       break;
-      // mute sound
+    // mute sound
     case -5:
       if (isSoundOn){
         isSoundOn = false;
@@ -522,122 +519,123 @@ class MazeGame {
       _maze.compute ();
   }
 
-    void Reset () {
-      _state = state_init;
+  void Reset () {
+    _state = state_init;
 
-       int p = int (random(1,6));
-       //veći p = lakši labirint (u smislu glađih zidova)
+     int p = int (random(1,6));
+     //veći p = lakši labirint (u smislu glađih zidova)
 
-      _maze = new Maze(broj_kvadrata_y, broj_kvadrata_x , p);
-      _maze.compute ();
-      _maze.show (velicina_kvadrata);
+    _maze = new Maze(broj_kvadrata_y, broj_kvadrata_x , p);
+    _maze.compute ();
+    _maze.show (velicina_kvadrata);
 
-      _needToRedraw = true;
+    _needToRedraw = true;
 
-      _startTime = 0;
-      _endTime = 0;
+    _startTime = 0;
+    _endTime = 0;
 
-      ClearTextArea();
+    ClearTextArea();
 
-      textAlign(CENTER);
-      fill(black);
-      text("Press SPACE to start", sirina / 2, pocetak_teksta_y);
-    }
+    textAlign(CENTER);
+    fill(black);
+    text("Press SPACE to start", sirina / 2, pocetak_teksta_y);
+  }
 
-    int getState() {
-      return _state;
-    }
+  int getState() {
+    return _state;
+  }
 
-    void Start() {
-     if (_state == state_init) {
-       Run();
+  void Start() {
+   if (_state == state_init) {
+     Run();
 
-       // glazba se ponavlja (loop)
-       if (!player.isPlaying()){
-         if (isSoundOn){
-           player.loop();
-         }
+     // glazba se ponavlja (loop)
+     if (!mazePlayer.isPlaying()){
+       if (isSoundOn){
+         mazePlayer.loop();
        }
-       return;
      }
-    }
-    void Move () {
-      if (_state == state_run) {
-        if (keyCode == LEFT) _maze.goLeft();
-        else if (keyCode == RIGHT) _maze.goRight();
-        else if (keyCode == DOWN) _maze.goDown();
-        else if (keyCode == UP) _maze.goUp();
-      }
-    }
-
-    void Run() {
-      _state = state_run;
-      _startTime = millis();
-
-      // Clear and draw score
-      ClearTextArea();
-    }
-
-    void End() {
-      _state = state_end;
-      _endTime = millis();
-
-      ClearTextArea();
-
-      textAlign(CENTER);
-      fill(black);
-      text("FINISHED in",sirina / 2, pocetak_teksta_y);
-      int delta = (_endTime - _startTime) / 1000;
-      int m = delta / 60;
-      int s = (delta - m*60);
-      String ti = "Time : " + m + "'" + s + "\"";
-      text(ti ,sirina / 2, pocetak_teksta_y + tekst_pomak);
-      String p = "Current : " + _maze.getStep() + " steps";
-      text(p , sirina / 2, pocetak_teksta_y + 2*tekst_pomak);
-      String d = "Best : " + _maze.getMaxDistance () + " steps";
-      text(d , sirina / 2, pocetak_teksta_y + 3*tekst_pomak);
-
-      // pauziranje pozadinske glazbe
-      player.pause();
-      player.rewind();
-      // pobjednička glazba
-      if (isSoundOn){
-        win_sound.play();
-      }
-    }
-
-    void ClearTextArea () {
-      fill (white);
-      rect(0, velicina_kvadrata * broj_kvadrata_y ,broj_kvadrata_x * velicina_kvadrata , dim_tekst_okvira);
-    }
-
-    void KeyPressed (int k) {
-      if (k == 'r') Reset(); // Resetting game
-      if (k == ' ') Start(); // Start
-      if (k == BACKSPACE){
-        this.Reset();
-        player.pause();
-        player.rewind();
-        selectedItem = -2;
-      }
-      Move ();
-    }
-
-    void Manage() {
-      if (_state == state_run) {
-        if (_maze.AtEnd()) End();
-        else { // Updating current time
-          fill (white);
-          rect(0, velicina_kvadrata * broj_kvadrata_y ,broj_kvadrata_x * velicina_kvadrata , dim_tekst_okvira);
-          fill (black);
-          int delta = (millis() - _startTime) / 1000;
-          int m = delta / 60;
-          int s = (delta - m*60);
-          String ti = "Time : " + m + "'" + s + "\"";
-          text(ti ,sirina / 2, pocetak_teksta_y + tekst_pomak);
-        }
-      }
+     return;
    }
+  }
+
+  void Move () {
+    if (_state == state_run) {
+      if (keyCode == LEFT) _maze.goLeft();
+      else if (keyCode == RIGHT) _maze.goRight();
+      else if (keyCode == DOWN) _maze.goDown();
+      else if (keyCode == UP) _maze.goUp();
+    }
+  }
+
+  void Run() {
+    _state = state_run;
+    _startTime = millis();
+
+    // Clear and draw score
+    ClearTextArea();
+  }
+
+  void End() {
+    _state = state_end;
+    _endTime = millis();
+
+    ClearTextArea();
+
+    textAlign(CENTER);
+    fill(black);
+    text("FINISHED in",sirina / 2, pocetak_teksta_y);
+    int delta = (_endTime - _startTime) / 1000;
+    int m = delta / 60;
+    int s = (delta - m*60);
+    String ti = "Time : " + m + "'" + s + "\"";
+    text(ti ,sirina / 2, pocetak_teksta_y + tekst_pomak);
+    String p = "Current : " + _maze.getStep() + " steps";
+    text(p , sirina / 2, pocetak_teksta_y + 2*tekst_pomak);
+    String d = "Best : " + _maze.getMaxDistance () + " steps";
+    text(d , sirina / 2, pocetak_teksta_y + 3*tekst_pomak);
+
+    // pauziranje pozadinske glazbe
+    mazePlayer.pause();
+    mazePlayer.rewind();
+    // pobjednička glazba
+    if (isSoundOn){
+      win_sound.play();
+    }
+  }
+
+  void ClearTextArea () {
+    fill (white);
+    rect(0, velicina_kvadrata * broj_kvadrata_y ,broj_kvadrata_x * velicina_kvadrata , dim_tekst_okvira);
+  }
+
+  void KeyPressed (int k) {
+    if (k == 'r') Reset(); // Resetting game
+    if (k == ' ') Start(); // Start
+    if (k == BACKSPACE){
+      this.Reset();
+      mazePlayer.pause();
+      mazePlayer.rewind();
+      selectedItem = -1;
+    }
+    Move();
+  }
+
+  void Manage() {
+    if (_state == state_run) {
+      if (_maze.AtEnd()) End();
+      else { // Updating current time
+        fill (white);
+        rect(0, velicina_kvadrata * broj_kvadrata_y ,broj_kvadrata_x * velicina_kvadrata , dim_tekst_okvira);
+        fill (black);
+        int delta = (millis() - _startTime) / 1000;
+        int m = delta / 60;
+        int s = (delta - m*60);
+        String ti = "Time : " + m + "'" + s + "\"";
+        text(ti ,sirina / 2, pocetak_teksta_y + tekst_pomak);
+      }
+    }
+ }
 
     int _state;
     boolean _needToRedraw;
@@ -1007,7 +1005,7 @@ class TetrisGame {
         tetrisPlayer.pause();
         tetrisPlayer.rewind();
         gameOn = false;
-        selectedItem = -2;
+        selectedItem = -1;
       }
       if (key == CODED && gameOn) {
         switch(keyCode) {
@@ -1206,9 +1204,6 @@ class Grid {
     for (int i = 0; i < w; i ++) {
       for (int j = 0; j < h; j ++) {
         if (cells[i][j] != 0) {
-          //fill(cells[i][j]);
-          //rect(i*sizeOfCube, j*sizeOfCube, sizeOfCube, sizeOfCube);
-          //TODO
           image(figures[ColorToInt(cells[i][j])], i*sizeOfCube, j*sizeOfCube, sizeOfCube, sizeOfCube);
         }
       }
