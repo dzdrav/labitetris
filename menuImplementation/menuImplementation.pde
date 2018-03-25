@@ -82,6 +82,8 @@ String menu_background_path = "menu_background.jpg";
 String icon_speaker_path = "icon_speaker.png";
 String icon_muted_path = "icon_muted.png";
 
+color bg;
+
 void setup(){
   size(800, 800, P2D);
   smooth(4);
@@ -117,6 +119,8 @@ void setup(){
   mazePlayer = minim.loadFile(music_maze);
   win_sound = minim.loadFile(music_win);
   tetrisPlayer = minim.loadFile(music_tetris);
+  
+  bg = color(60);
 
   font = createFont("Arial",20,true);  // Loading font
   textFont(font);
@@ -160,7 +164,7 @@ void draw(){
       break;
     case 2:
       // pokreni labirint
-      colorMode(RGB, height, height, height);
+      //colorMode(RGB, height, height, height);
       if (mazeGame.getState() == state_init) {
         mazeGame._maze.show(velicina_kvadrata);
         mazeGame._needToRedraw = true;
@@ -196,7 +200,6 @@ void draw(){
       fill(0);
       text(pravila, 25, 120);
       break;
-    case -1:
     default:
       mainMenu.Display();
       break;
@@ -220,7 +223,7 @@ void keyPressed() {
       // -1 je kod za povratak u main menu
       selectedItem = -1;
       // vrati se u Main menu
-      mainMenu.Display();
+      //mainMenu.Display();
       break;
   }
 }
@@ -956,7 +959,7 @@ class TetrisGame {
   }
 
   void Manage() {
-    background(60);
+    background(bg);
     textAlign(LEFT);
     if(grid != null) {
       grid.drawGrid();
@@ -1000,14 +1003,19 @@ class TetrisGame {
       }
   }
 
-  void KeyPressed(int key) {
-      if (key == BACKSPACE){
+  void KeyPressed(int k) {
+      if (k == BACKSPACE){ //<>//
+        if (!looping) {
+          loop();
+        }
         tetrisPlayer.pause();
         tetrisPlayer.rewind();
-        gameOn = false;
-        selectedItem = -1;
+        selectedItem = -1; //<>//
+        gameOn = false; //<>//
+        gameOver = false;
+        grid = null;
       }
-      if (key == CODED && gameOn) {
+      if (k == CODED && gameOn) {
         switch(keyCode) {
         case LEFT:
         case RIGHT:
@@ -1044,7 +1052,7 @@ class TetrisGame {
             }
           }
       }
-      else if (key == 'r') {
+      else if (k == 'r') {
           gameOn = false;
           gameOver = false;
           grid = null;
