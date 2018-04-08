@@ -74,9 +74,9 @@ Button muteButton;
 Minim minim;
 AudioPlayer tetrisPlayer;
 AudioPlayer mazePlayer;
-AudioPlayer win_sound;
+AudioPlayer mazePlayer_win;
 String music_maze = "theme_music_maze.mp3";
-String music_win = "music_win.mp3";
+String music_maze_win = "music_maze_win.mp3";
 String music_tetris = "theme_music.mp3";
 String menu_background_path = "menu_background.jpg";
 String icon_speaker_path = "icon_speaker.png";
@@ -115,7 +115,7 @@ void setup(){
   // sound loading
   minim = new Minim(this);
   mazePlayer = minim.loadFile(music_maze);
-  win_sound = minim.loadFile(music_win);
+  mazePlayer_win = minim.loadFile(music_maze_win);
   tetrisPlayer = minim.loadFile(music_tetris);
 
   font = createFont("Arial",20,true);  // Loading font
@@ -140,15 +140,16 @@ void draw(){
       // pravila tetrisa
        background(#00BFA5);
        naslov = "Pravila tetrisa: ";
-       pravila = "Dijelovi koji se sastoje od četiri kvadratića padaju s vrha polja.\n"
+       pravila = "Dijelovi koji se sastoje od četiri kvadratića padaju s vrha ekrana.\n"
                  + "Igrač ih može rotirati i slagati na način da između dijelova \n ne ostaje prazan prostor.\n"
-                 + "Rotacija se obavlja strelicom prema gore, a pomicanje ulijevo ili udesno \n strelicom ulijevo odnosno udesno.\n"
-                 + "Padanje dijelova može se ubrzati pritiskom na strelicu prema dolje \n ili pritiskom na tipku 'shift'.\n"
-                 + "Cilj igre je popuniti cijelo polje za igru bez mogućnosti da se pojavi novi dio.\n"
-                 + "Za početak igre pritisnite 's'.\n"
-                 + "Za ponovno iscrtavanje pritisnite 'r'.\n"
-                 + "Za pauziranje igre pritisnite 'p'.\n"
-                 + "Za povratak u glavni izbornik pritisnite 'backspace'.\n"
+                 + "Rotacija se obavlja strelicom prema GORE, a pomicanje ulijevo ili udesno \n strelicom LIJEVO odnosno DESNO.\n"
+                 + "Padanje dijelova može se ubrzati pritiskom na strelicu prema DOLJE \n ili pritiskom na tipku SPACE.\n"
+                 + "Cilj igre je popuniti cijeli redak čime taj redak nestaje i igrač dobiva bodove.\n"
+                 + "Igra prestaje kada više nema mjesta za nove figurice\n"
+                 + "Za početak igre pritisnite SPACE.\n"
+                 + "Za ponovno iscrtavanje pritisnite R.\n"
+                 + "Za pauziranje igre pritisnite P.\n"
+                 + "Za povratak u glavni izbornik pritisnite ESCAPE.\n"
                  + "Sretno!";
       textAlign(LEFT);
       textFont(f, 40);
@@ -182,11 +183,11 @@ void draw(){
       background(#00BFA5);
       naslov = "Pravila labirinta: ";
       pravila= "Labirint je igra u kojoj je cilj doći od početne točke (crvena) \n do krajnje (zelena). \n "
-                +  "Igrač se po labirintu pomiče pomoću strelica.\n "
-                +  "Gore, dolje, lijevo i desno. \n"
-                + "Za početak igre pritisnite razmak. \n "
-                + "Za ponovno iscrtavanje pritisnite 'r'. \n"
-                + "Za povratak u glavni izbornik iz pritisnite 'backspace'. \n"
+                + "Igrač se po labirintu pomiče pomoću strelica.\n "
+                + "Gore, dolje, lijevo i desno. \n"
+                + "Za početak igre pritisnite SPACE. \n "
+                + "Za ponovno iscrtavanje pritisnite R ili SPACE. \n"
+                + "Za povratak u glavni izbornik iz pritisnite ESCAPE. \n"
                 + "Sretno!";
       textAlign(LEFT);
       textFont(f, 40);
@@ -208,14 +209,20 @@ void keyPressed() {
     // tumači pritisnutu tipku unutar Tetrisa
     case 0:
       tetrisGame.KeyPressed(key);
+      key = 0;
       break;
     // tumači pritisnutu tipku unutar Mazea
     case 2:
       mazeGame.KeyPressed(key);
+      key = 0;
       break;
-    // ako smo u pcijama 1/3 (pravila)
+    // ako smo u opcijama 1/3 (pravila)
     case 1:
     case 3:
+      key = 0;
+      selectedItem = -1;
+      mainMenu.Display();
+      break;
     default:
       // -1 je kod za povratak u main menu
       selectedItem = -1;
@@ -599,8 +606,8 @@ class MazeGame {
     mazePlayer.rewind();
     // pobjednička glazba
     if (isSoundOn){
-      win_sound.play();
-      win_sound.rewind();
+      mazePlayer_win.play();
+      mazePlayer_win.rewind();
     }
   }
 
@@ -610,9 +617,10 @@ class MazeGame {
   }
 
   void KeyPressed (int k) {
-    if (k == 'r') Reset(); // Resetting game
+    if ( (k == 'r') || (_state == state_run && k == ' ') ) // Resetting game
+      Reset();
     if (k == ' ') Start(); // Start
-    if (k == BACKSPACE){
+    if (k == ESC){ // return to menu
       this.Reset();
       mazePlayer.pause();
       mazePlayer.rewind();
@@ -996,12 +1004,12 @@ class TetrisGame {
         textAlign(LEFT);
         textSize(txtSize / 2);
         fill(textColor);
-        text("Press 's' to start playing!", 210, 220);
+        text("Press SPACE to start playing!", 210, 220);
       }
   }
 
   void KeyPressed(int key) {
-      if (key == BACKSPACE){
+      if (key == ESC){
         tetrisPlayer.pause();
         tetrisPlayer.rewind();
         gameOn = false;
@@ -1013,16 +1021,16 @@ class TetrisGame {
         case RIGHT:
         case DOWN:
         case UP:
-        case SHIFT:
           piece.inputKey(keyCode);
           break;
         }
-      } else if (keyCode == 83) {// "s"
-        if(!gameOn) {
-          initialize();
-          gameOver = false;
-          gameOn = true;
-        }
+      } else if (key == ' ' && gameOn){
+          piece.inputKey(keyCode);
+      //} else if (keyCode == 83) {// "s"
+      } else if (key == ' ' && !gameOn) {// "s"
+        initialize();
+        gameOver = false;
+        gameOn = true;
       } else if (keyCode == 80) {// "p"
           if(gameOn) {
             if(looping) {
@@ -1032,7 +1040,7 @@ class TetrisGame {
             fill(textColor);
             textSize(16);
             textAlign(LEFT);
-            text("Press 'p' to resume playing!", 210, 220);
+            text("Press P to resume playing!", 210, 220);
             tetrisPlayer.pause();
             noLoop();
             }
@@ -1281,16 +1289,14 @@ class Piece {
     case LEFT:
       oneStepLeft();
       if(grid.pieceFits()){
-        //soundLeftRight();
-      }else {
+      } else {
          oneStepRight();
       }
       break;
     case RIGHT:
       oneStepRight();
       if(grid.pieceFits()){
-        //soundLeftRight();
-      }else{
+      } else {
          oneStepLeft();
       }
       break;
@@ -1302,11 +1308,11 @@ class Piece {
       if(!grid.pieceFits()){
          rotation = rotation-1 < 0 ? 3 : rotation-1;
          //soundRotationFail();
-      }else{
+      } else {
         //soundRotation();
       }
       break;
-    case SHIFT:
+    case ' ':
       goToBottom();
       break;
     }
