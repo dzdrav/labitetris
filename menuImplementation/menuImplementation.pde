@@ -1,12 +1,12 @@
 /*
 TODO
---popraviti slova na tetrisu
-posttaviti globalni font
 popraviti glazbicu kada se resetira gejm
 --popraviti item outline
 --napravit pause za maze
 */
+// hide overlay menu in Atom: Ctrl+Alt+C
 // sound library
+
 import ddf.minim.*;
 
 color white = color (0xFF, 0xFF, 0xFF);
@@ -160,7 +160,7 @@ void draw(){
       break;
     case 2:
       // pokreni labirint
-      colorMode(RGB, height, height, height);
+      //colorMode(RGB, height, height, height);
       if (mazeGame.getState() == state_init) {
         mazeGame._maze.show(velicina_kvadrata);
         mazeGame._needToRedraw = true;
@@ -509,7 +509,6 @@ class Button{
 
 class MazeGame {
   MazeGame () {
-    //Reset();
       _state = state_init;
 
        int p = int (random(1,6));
@@ -601,6 +600,7 @@ class MazeGame {
     // pobjednička glazba
     if (isSoundOn){
       win_sound.play();
+      win_sound.rewind();
     }
   }
 
@@ -969,15 +969,15 @@ class TetrisGame {
           piece.oneStepDown();
         }
       }
-    piece.display(false);
-    score.display();
-    // glazba se ponavlja (loop)
-    if (!tetrisPlayer.isPlaying()){
-      if (isSoundOn){
-        tetrisPlayer.loop();
+      piece.display(false);
+      score.display();
+      // glazba se ponavlja (loop)
+      if (!tetrisPlayer.isPlaying()){
+        if (isSoundOn){
+          tetrisPlayer.loop();
+        }
       }
     }
-  }
     if (gameOver) {
         noStroke();
         fill(255, 60);

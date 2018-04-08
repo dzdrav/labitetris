@@ -1,4 +1,4 @@
-# LABITETRIS
+# TETRILAB
 ## Authors
 Mihael Maltar
 
