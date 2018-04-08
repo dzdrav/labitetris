@@ -82,6 +82,8 @@ String menu_background_path = "menu_background.jpg";
 String icon_speaker_path = "icon_speaker.png";
 String icon_muted_path = "icon_muted.png";
 
+color bg;
+
 void setup(){
   size(800, 800, P2D);
   smooth(4);
@@ -117,6 +119,8 @@ void setup(){
   mazePlayer = minim.loadFile(music_maze);
   mazePlayer_win = minim.loadFile(music_maze_win);
   tetrisPlayer = minim.loadFile(music_tetris);
+  
+  bg = color(60);
 
   font = createFont("Arial",20,true);  // Loading font
   textFont(font);
@@ -142,6 +146,7 @@ void draw(){
        naslov = "Pravila tetrisa: ";
        pravila = "Dijelovi koji se sastoje od četiri kvadratića padaju s vrha ekrana.\n"
                  + "Igrač ih može rotirati i slagati na način da između dijelova \n ne ostaje prazan prostor.\n"
+<<<<<<< HEAD
                  + "Rotacija se obavlja strelicom prema GORE, a pomicanje ulijevo ili udesno \n strelicom LIJEVO odnosno DESNO.\n"
                  + "Padanje dijelova može se ubrzati pritiskom na strelicu prema DOLJE \n ili pritiskom na tipku SPACE.\n"
                  + "Cilj igre je popuniti cijeli redak čime taj redak nestaje i igrač dobiva bodove.\n"
@@ -150,6 +155,15 @@ void draw(){
                  + "Za ponovno iscrtavanje pritisnite R.\n"
                  + "Za pauziranje igre pritisnite P.\n"
                  + "Za povratak u glavni izbornik pritisnite ESCAPE.\n"
+=======
+                 + "Rotacija se obavlja strelicom prema gore, a pomicanje ulijevo ili udesno \n strelicom ulijevo odnosno udesno.\n"
+                 + "Padanje dijelova može se ubrzati pritiskom na strelicu prema dolje \n ili pritiskom na tipku 'shift'.\n"
+                 + "Cilj igre je ne dozvoliti da se popuni cijelo polje za igru\n bez mogućnosti da se pojavi novi dio.\n"
+                 + "Za početak igre pritisnite 's'.\n"
+                 + "Za ponovno iscrtavanje pritisnite 'r'.\n"
+                 + "Za pauziranje igre pritisnite 'p'.\n"
+                 + "Za povratak u glavni izbornik pritisnite 'backspace'.\n"
+>>>>>>> 50ef439a5134c4638fb8c9a586209ccf4d76f727
                  + "Sretno!";
       textAlign(LEFT);
       textFont(f, 40);
@@ -197,7 +211,6 @@ void draw(){
       fill(0);
       text(pravila, 25, 120);
       break;
-    case -1:
     default:
       mainMenu.Display();
       break;
@@ -227,7 +240,7 @@ void keyPressed() {
       // -1 je kod za povratak u main menu
       selectedItem = -1;
       // vrati se u Main menu
-      mainMenu.Display();
+      //mainMenu.Display();
       break;
   }
 }
@@ -625,7 +638,7 @@ class MazeGame {
       mazePlayer.pause();
       mazePlayer.rewind();
       selectedItem = -1;
-    }
+    } 
     Move();
   }
 
@@ -964,7 +977,7 @@ class TetrisGame {
   }
 
   void Manage() {
-    background(60);
+    background(bg);
     textAlign(LEFT);
     if(grid != null) {
       grid.drawGrid();
@@ -1008,14 +1021,24 @@ class TetrisGame {
       }
   }
 
+<<<<<<< HEAD
   void KeyPressed(int key) {
       if (key == ESC){
+=======
+  void KeyPressed(int k) {
+      if (k == BACKSPACE){ //<>//
+>>>>>>> 50ef439a5134c4638fb8c9a586209ccf4d76f727
         tetrisPlayer.pause();
         tetrisPlayer.rewind();
-        gameOn = false;
-        selectedItem = -1;
+        if (!looping) {
+          loop();
+        }
+        selectedItem = -1; //<>//
+        gameOn = false; //<>//
+        gameOver = false;
+        grid = null;
       }
-      if (key == CODED && gameOn) {
+      if (k == CODED && gameOn) {
         switch(keyCode) {
         case LEFT:
         case RIGHT:
@@ -1052,7 +1075,7 @@ class TetrisGame {
             }
           }
       }
-      else if (key == 'r') {
+      else if (k == 'r') {
           gameOn = false;
           gameOver = false;
           grid = null;
